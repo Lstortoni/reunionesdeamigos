@@ -1,0 +1,17 @@
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\bin\Debug\net8.0\ReunionesDeAmigos.Infrastructure.deps.json
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\bin\Debug\net8.0\ReunionesDeAmigos.Infrastructure.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\bin\Debug\net8.0\ReunionesDeAmigos.Infrastructure.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\bin\Debug\net8.0\ReunionesDeAmigos.Application.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\bin\Debug\net8.0\ReunionesDeAmigos.Domain.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\bin\Debug\net8.0\ReunionesDeAmigos.Domain.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\bin\Debug\net8.0\ReunionesDeAmigos.Application.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.csproj.AssemblyReference.cache
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.AssemblyInfoInputs.cache
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.AssemblyInfo.cs
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\Reunione.00C4BF95.Up2Date
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\refint\ReunionesDeAmigos.Infrastructure.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ref\ReunionesDeAmigos.Infrastructure.dll

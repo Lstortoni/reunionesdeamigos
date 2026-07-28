@@ -1,0 +1,15 @@
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\bin\Debug\net8.0\ReunionesDeAmigos.Application.deps.json
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\bin\Debug\net8.0\ReunionesDeAmigos.Application.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\bin\Debug\net8.0\ReunionesDeAmigos.Application.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\bin\Debug\net8.0\ReunionesDeAmigos.Domain.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\bin\Debug\net8.0\ReunionesDeAmigos.Domain.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.csproj.AssemblyReference.cache
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.AssemblyInfoInputs.cache
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.AssemblyInfo.cs
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.csproj.CoreCompileInputs.cache
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\Reunione.57553327.Up2Date
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\refint\ReunionesDeAmigos.Application.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ref\ReunionesDeAmigos.Application.dll

@@ -1,0 +1,11 @@
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\bin\Debug\net8.0\ReunionesDeAmigos.Domain.deps.json
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\bin\Debug\net8.0\ReunionesDeAmigos.Domain.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\bin\Debug\net8.0\ReunionesDeAmigos.Domain.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ReunionesDeAmigos.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ReunionesDeAmigos.Domain.AssemblyInfoInputs.cache
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ReunionesDeAmigos.Domain.AssemblyInfo.cs
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ReunionesDeAmigos.Domain.csproj.CoreCompileInputs.cache
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ReunionesDeAmigos.Domain.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\refint\ReunionesDeAmigos.Domain.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ReunionesDeAmigos.Domain.pdb
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ref\ReunionesDeAmigos.Domain.dll
