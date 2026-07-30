@@ -1,0 +1,432 @@
+# Arquitectura del backend
+
+## Objetivo
+
+Este documento explica cómo organizamos el backend, qué responsabilidad tiene
+cada parte y cómo circula una operación desde la API hasta la base de datos.
+
+La intención es mantener el proyecto comprensible y evitar que controladores,
+reglas del negocio y acceso a datos terminen mezclados.
+
+## Solución
+
+El backend se divide en cuatro proyectos:
+
+```text
+Api/
+├── ReunionesDeAmigos.sln
+└── src/
+    ├── ReunionesDeAmigos.Domain/
+    ├── ReunionesDeAmigos.Application/
+    ├── ReunionesDeAmigos.Infrastructure/
+    └── ReunionesDeAmigos.Api/
+```
+
+Son proyectos `.NET` diferentes, no solamente carpetas. Esta separación permite
+que el compilador controle sus dependencias.
+
+## Dirección de las dependencias
+
+```text
+Api ───────────────► Application ─────────► Domain
+ │                         ▲
+ └──► Infrastructure ──────┘
+              │
+              └────────────────────────────► Domain
+```
+
+Reglas:
+
+- `Domain` no referencia ningún otro proyecto.
+- `Application` referencia únicamente `Domain`.
+- `Infrastructure` referencia `Application` y `Domain`.
+- `Api` referencia `Application` e `Infrastructure`.
+
+`Domain` no conoce ASP.NET, Entity Framework, PostgreSQL, Docker ni HTTP.
+
+## Domain
+
+`Domain` representa el negocio de la aplicación.
+
+Contiene:
+
+- Entidades.
+- Enums.
+- Reglas propias del negocio.
+- Resultados del dominio.
+- Excepciones de dominio.
+
+Ejemplos:
+
+```text
+Usuario
+Salida
+ParticipanteSalida
+Lugar
+Propuesta
+Voto
+```
+
+### DDD utilizado en el proyecto
+
+DDD significa `Domain-Driven Design`, o diseño guiado por el dominio.
+
+En este proyecto lo aplicamos de manera práctica: las reglas que determinan
+cómo puede cambiar una entidad viven dentro de esa entidad.
+
+Por ejemplo:
+
+```csharp
+salida.AgregarParticipanteRegistrado(usuario, fechaActual);
+salida.AgregarPropuestaManual(...);
+salida.RegistrarVoto(...);
+salida.Cancelar(...);
+```
+
+`Salida` controla que:
+
+- El usuario no participe dos veces.
+- La etapa permita ingresar, proponer o votar.
+- Una propuesta pertenezca a la salida.
+- Un participante tenga un solo voto.
+- Los plazos mantengan un orden válido.
+
+La entidad no consulta la base, no envía mensajes y no genera respuestas HTTP.
+
+## Application
+
+`Application` contiene los casos de uso que ofrece la aplicación.
+
+Su estructura inicial es:
+
+```text
+Application/
+├── DTOs/
+├── Interfaces/
+│   ├── Repositories/
+│   └── Services/
+└── Services/
+```
+
+### Servicios de aplicación
+
+Un servicio coordina los pasos de un caso de uso.
+
+Ejemplo conceptual:
+
+```csharp
+public async Task AgregarParticipanteAsync(...)
+{
+    var salida = await _salidaRepository.ObtenerPorIdAsync(...);
+    var usuario = await _usuarioRepository.ObtenerPorIdAsync(...);
+
+    var participante = salida.AgregarParticipanteRegistrado(
+        usuario,
+        _clock.UtcNow);
+
+    await _unitOfWork.SaveChangesAsync(...);
+
+    return Mapear(participante);
+}
+```
+
+El servicio:
+
+1. Obtiene información mediante repositorios.
+2. Coordina dependencias.
+3. Llama a la entidad para aplicar reglas.
+4. Confirma los cambios.
+5. Devuelve un DTO.
+
+El servicio no contiene consultas de Entity Framework ni responde directamente
+una solicitud HTTP.
+
+### Interfaces de servicios
+
+Las interfaces describen los casos de uso disponibles:
+
+```text
+ISalidaService
+IParticipanteSalidaService
+IPropuestaService
+IVotoService
+ILugarService
+```
+
+La API dependerá de estas interfaces y no de implementaciones concretas.
+
+### DTOs
+
+Los DTOs transportan datos entre la API y Application.
+
+Ejemplos:
+
+```text
+CrearSalidaRequest
+SalidaDto
+LugarDto
+PropuestaDto
+VotoDto
+```
+
+Un DTO no contiene reglas del negocio. Tampoco es una entidad que Entity
+Framework deba guardar.
+
+## Repositorios
+
+Las interfaces de repositorios están en `Application`:
+
+```text
+ISalidaRepository
+IUsuarioRepository
+ILugarRepository
+```
+
+Sus implementaciones con Entity Framework estarán en `Infrastructure`.
+
+El repositorio se ocupa de:
+
+- Consultar entidades.
+- Agregar entidades al contexto.
+- Preparar cambios para su persistencia.
+
+El repositorio no debería decidir reglas como quién puede votar o cuándo puede
+agregarse una propuesta.
+
+### Por qué no hay un repositorio por tabla
+
+Los repositorios se definen para las entidades principales, no automáticamente
+para cada tabla.
+
+```text
+Salida
+├── ParticipanteSalida
+├── Propuesta
+└── Voto
+```
+
+`ParticipanteSalida`, `Propuesta` y `Voto` se administran mediante `Salida`.
+
+Ejemplo:
+
+```csharp
+var salida = await _salidaRepository.ObtenerPorIdAsync(...);
+
+salida.RegistrarVoto(...);
+
+await _unitOfWork.SaveChangesAsync(...);
+```
+
+No necesitamos inicialmente un `IVotoRepository` para agregar el voto
+directamente.
+
+`Lugar` sí tiene repositorio porque existe como catálogo independiente y puede
+consultarse sin crear una salida.
+
+## Infrastructure
+
+`Infrastructure` contendrá las implementaciones técnicas:
+
+```text
+Infrastructure/
+├── Persistence/
+│   ├── AppDbContext.cs
+│   ├── Configurations/
+│   └── Migrations/
+├── Repositories/
+├── Identity/
+└── Services/
+```
+
+Aquí estarán:
+
+- Entity Framework Core.
+- PostgreSQL.
+- Implementaciones de repositorios.
+- Generación segura de códigos y credenciales.
+- Autenticación.
+- Servicios externos.
+
+Infrastructure puede depender de Application porque implementa sus interfaces.
+
+## Unit of Work
+
+`IUnitOfWork` permite que Application confirme cambios sin conocer
+`AppDbContext`.
+
+Application llama:
+
+```csharp
+await _unitOfWork.SaveChangesAsync(cancellationToken);
+```
+
+La implementación real hará:
+
+```csharp
+return await dbContext.SaveChangesAsync(cancellationToken);
+```
+
+Es una forma indirecta de usar `DbContext.SaveChangesAsync()`.
+
+Los repositorios preparan los cambios y el servicio decide cuándo confirmarlos:
+
+```csharp
+await _salidaRepository.AgregarAsync(salida, cancellationToken);
+await _unitOfWork.SaveChangesAsync(cancellationToken);
+```
+
+## Api
+
+`Api` será el punto de entrada HTTP.
+
+Contendrá:
+
+```text
+Api/
+├── Controllers/
+├── Middleware/
+├── Extensions/
+└── Program.cs
+```
+
+Un controlador:
+
+1. Recibe la solicitud HTTP.
+2. Obtiene la identidad autenticada.
+3. Llama a una interfaz de Application.
+4. Convierte el resultado en una respuesta HTTP.
+
+No consulta `AppDbContext` ni modifica entidades directamente.
+
+Ejemplo:
+
+```csharp
+[HttpPost]
+public async Task<ActionResult<SalidaDto>> Crear(
+    CrearSalidaRequest request,
+    CancellationToken cancellationToken)
+{
+    var salida = await _salidaService.CrearAsync(
+        request,
+        usuarioId,
+        cancellationToken);
+
+    return Ok(salida);
+}
+```
+
+## Flujo completo de una escritura
+
+Ejemplo: un usuario registrado ingresa a una salida.
+
+```text
+Controller
+    │
+    ▼
+IParticipanteSalidaService
+    │
+    ▼
+ParticipanteSalidaService
+    ├── obtiene Salida con ISalidaRepository
+    ├── obtiene Usuario con IUsuarioRepository
+    │
+    ▼
+Salida.AgregarParticipanteRegistrado(...)
+    ├── verifica el estado
+    ├── evita duplicados
+    └── agrega el participante a su colección
+    │
+    ▼
+IUnitOfWork.SaveChangesAsync()
+    │
+    ▼
+AppDbContext.SaveChangesAsync()
+    │
+    ▼
+PostgreSQL
+```
+
+La entidad decide cómo cambia. El repositorio recupera o prepara la entidad y
+`UnitOfWork` persiste cómo quedó.
+
+## Flujo de una consulta
+
+Una consulta simple no necesita ejecutar comportamiento del dominio:
+
+```text
+Controller
+    ↓
+ISalidaService.ObtenerPorIdAsync()
+    ↓
+ISalidaRepository
+    ↓
+Entity Framework
+    ↓
+SalidaDto
+```
+
+DDD tiene más relevancia en las operaciones que modifican estado y deben
+proteger reglas. Una consulta puede ser principalmente acceso y transformación
+de datos.
+
+## Inyección de dependencias
+
+Las clases dependen de interfaces:
+
+```csharp
+public SalidaService(
+    ISalidaRepository salidaRepository,
+    IUsuarioRepository usuarioRepository,
+    IUnitOfWork unitOfWork,
+    IClock clock)
+{
+}
+```
+
+La API configurará las implementaciones:
+
+```text
+ISalidaService    -> SalidaService
+ISalidaRepository -> SalidaRepository
+IUnitOfWork       -> UnitOfWork
+IClock            -> SystemClock
+```
+
+Esto permite reemplazar una implementación sin cambiar el servicio.
+
+## Pruebas y repositorios en memoria
+
+Las interfaces permiten utilizar implementaciones en memoria:
+
+```text
+ISalidaRepository
+├── SalidaRepository con PostgreSQL
+└── SalidaRepositoryEnMemoria
+```
+
+Un servicio puede probarse con el repositorio en memoria:
+
+```text
+SalidaService
+    ↓
+ISalidaRepository
+    ↓
+SalidaRepositoryEnMemoria
+```
+
+Las reglas internas también pueden probarse directamente sobre `Salida`, sin
+repositorios ni base de datos.
+
+## Decisiones actuales
+
+- Arquitectura limpia con cuatro proyectos.
+- Reglas propias del negocio dentro de las entidades.
+- Servicios para coordinar casos de uso.
+- Interfaces para servicios y repositorios.
+- Repositorios para `Usuario`, `Salida` y `Lugar`.
+- Participantes, propuestas y votos administrados mediante `Salida`.
+- `UnitOfWork` como abstracción de `SaveChangesAsync`.
+- PostgreSQL y Entity Framework se incorporarán después de validar Application.
+
+Estas decisiones pueden ajustarse si la implementación demuestra que otra
+distribución resulta más clara.

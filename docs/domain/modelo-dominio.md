@@ -214,8 +214,13 @@ Tipos iniciales:
 Un lugar inactivo permanece en el historial, pero no puede seleccionarse para
 crear propuestas nuevas.
 
-La administración y carga del catálogo quedan fuera del primer flujo
-funcional. Inicialmente podrá utilizarse información precargada.
+La búsqueda y consulta del catálogo son públicas. La creación, modificación y
+desactivación de lugares requieren un usuario con rol administrador.
+
+Inicialmente podrán cargarse lugares mediante datos precargados o endpoints
+administrativos protegidos. Más adelante podrá incorporarse una interfaz
+interna de administración. La carga habitual no se realizará modificando
+PostgreSQL directamente, para conservar validaciones y trazabilidad.
 
 ## Propuesta
 
@@ -306,6 +311,10 @@ prácticas desde el comienzo:
 - Los usuarios registrados se autenticarán con mecanismos estándar.
 - Las credenciales de invitados serán largas, aleatorias y no se almacenarán en
   texto plano.
+- En el MVP, los invitados utilizarán directamente esa credencial para
+  identificarse en solicitudes posteriores. No se emitirán JWT para invitados.
+- La API calculará el hash de la credencial recibida y lo comparará con el valor
+  almacenado para identificar al participante.
 - Los secretos y cadenas de conexión se configurarán mediante variables de
   entorno y no se subirán al repositorio.
 - Los códigos y credenciales no se escribirán completos en los registros de la
