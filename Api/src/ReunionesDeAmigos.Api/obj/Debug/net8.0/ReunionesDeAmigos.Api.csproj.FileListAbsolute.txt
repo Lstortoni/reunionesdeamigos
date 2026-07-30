@@ -72,3 +72,4 @@ C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmig
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\obj\Debug\net8.0\Reunione.5636C0D9.Up2Date
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\obj\Debug\net8.0\ReunionesDeAmigos.Api.genruntimeconfig.cache
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\obj\Debug\net8.0\ref\ReunionesDeAmigos.Api.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\obj\Debug\net8.0\ReunionesDeAmigos.Api.sourcelink.json

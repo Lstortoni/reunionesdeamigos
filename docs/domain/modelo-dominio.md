@@ -4,9 +4,10 @@
 
 La aplicación permite organizar encuentros entre amigos.
 
-Un usuario registrado crea una salida y comparte su código de invitación. Los
-participantes ingresan con una cuenta o como invitados, agregan propuestas y
-votan una vez finalizado el período de propuestas.
+Un usuario registrado crea una salida y comparte un enlace o su código general
+de acceso por WhatsApp u otro medio. Quienes ingresan con una cuenta o como
+invitados se convierten en participantes, agregan propuestas y votan una vez
+finalizado el período de propuestas.
 
 El lugar elegido puede pertenecer al catálogo público o ser una opción manual,
 como una casa particular o pedir comida.
@@ -69,7 +70,7 @@ Datos iniciales:
 - Fecha del encuentro.
 - Fin del período de propuestas.
 - Fin de la votación.
-- Código de invitación único.
+- Código general de acceso único.
 - Creador.
 - Fecha de creación.
 - Indicador o fecha de cancelación.
@@ -80,8 +81,21 @@ Al crear una salida:
 
 1. Se asigna el usuario creador.
 2. Se agrega al creador como participante registrado.
-3. Se genera un código de invitación único.
+3. Se genera un código general de acceso único.
 4. La salida comienza recibiendo propuestas.
+
+La aplicación construye un enlace compartible a partir del código:
+
+```text
+https://dominio-aplicacion/salidas/{codigo}
+```
+
+El enlace y el ingreso manual del código representan el mismo acceso general.
+No se crean invitaciones individuales ni se registran anticipadamente los
+nombres de las personas invitadas.
+
+La salida comienza con un único participante: el creador. La colección aumenta
+a medida que otras personas ingresan.
 
 Las fechas deben cumplir:
 
@@ -99,7 +113,7 @@ El estado temporal se calcula a partir de las fechas:
 ```text
 Antes del fin de propuestas -> RecibiendoPropuestas
 Antes del fin de votación   -> VotacionAbierta
-Después del fin de votación -> VotacionCerrada
+Después del fin de votación y antes del encuentro -> Confirmada
 ```
 
 Una salida cancelada siempre tiene estado `Cancelada`, independientemente de
@@ -136,7 +150,7 @@ Datos iniciales:
 - Usuario opcional.
 - Nombre visible.
 - Fecha de ingreso.
-- Identificador privado de acceso para invitados.
+- Hash de la credencial privada de acceso para invitados.
 
 Un participante puede ser:
 
@@ -150,16 +164,25 @@ Reglas:
 - Un usuario registrado solo puede participar una vez en una salida.
 - Los nombres visibles pueden repetirse porque no identifican al participante.
 - Un invitado recibe una credencial privada para volver a ingresar.
-- El código de invitación identifica la salida; la credencial privada identifica
-  al invitado.
+- El código general o el enlace compartido permiten encontrar la salida.
+- Al ingresar con una cuenta, la identidad se obtiene del usuario autenticado.
+- Al ingresar sin cuenta, la API entrega una credencial privada y conserva una
+  representación segura para validarla posteriormente.
+- La credencial privada identifica al invitado después de haber ingresado y no
+  debe compartirse.
 - En la primera versión, un participante no puede abandonar ni ser expulsado.
-- Se permite ingresar mientras la salida recibe propuestas o tiene la votación
-  abierta.
-- No se permite ingresar a una salida cancelada o con votación cerrada.
+- Se permite ingresar durante todo el período de propuestas.
+- Se permite ingresar durante todo el período de votación, incluso pocos
+  minutos antes de su finalización.
+- Quien ingresa durante la votación puede votar, pero no agregar propuestas.
+- Votar no es obligatorio. Quien no vote sigue siendo participante y puede
+  consultar el resultado y la información final de la salida.
+- No se permite ingresar cuando la salida está confirmada, finalizada o
+  cancelada.
 
-La credencial del invitado no se almacenará en texto plano. La aplicación
-recibirá el valor original una sola vez y conservará una versión segura para
-validaciones posteriores.
+La aplicación recibe el valor original de la credencial una sola vez y lo
+guarda en el almacenamiento seguro del dispositivo. Esto permite que el
+invitado vuelva a entrar sin crear otro participante.
 
 ## Lugar
 
@@ -231,6 +254,12 @@ Reglas:
 - Solo se crean mientras la salida está recibiendo propuestas.
 - No se crean propuestas en una salida cancelada.
 - Una propuesta pertenece únicamente a la salida donde fue creada.
+- Un mismo lugar del catálogo no puede proponerse más de una vez en la misma
+  salida.
+- Dos propuestas manuales no pueden tener el mismo nombre después de quitar
+  espacios sobrantes e ignorar diferencias entre mayúsculas y minúsculas.
+- No se intentará detectar si nombres diferentes representan conceptualmente la
+  misma opción.
 - En la primera versión, las propuestas no se editan ni eliminan.
 
 ## Voto
@@ -251,6 +280,7 @@ Reglas:
 - La propuesta debe pertenecer a esa misma salida.
 - Solo se vota durante `VotacionAbierta`.
 - Cada participante tiene como máximo un voto por salida.
+- Un participante puede votar una propuesta propia o la de otro participante.
 - Mientras la votación está abierta puede cambiar su elección.
 - Cambiar la elección actualiza el voto existente; no crea otro.
 - No se muestran resultados parciales durante la votación.
@@ -265,10 +295,31 @@ Después del cierre se cuentan los votos de cada propuesta.
 
 No habrá desempate automático en la primera versión.
 
+## Acceso y seguridad inicial
+
+La seguridad será proporcional al tipo de aplicación, pero se aplicarán buenas
+prácticas desde el comienzo:
+
+- Todo acceso a la API utilizará HTTPS fuera del entorno local.
+- El código general será aleatorio, único y suficientemente difícil de adivinar.
+- La API limitará intentos repetidos de búsqueda por código.
+- Los usuarios registrados se autenticarán con mecanismos estándar.
+- Las credenciales de invitados serán largas, aleatorias y no se almacenarán en
+  texto plano.
+- Los secretos y cadenas de conexión se configurarán mediante variables de
+  entorno y no se subirán al repositorio.
+- Los códigos y credenciales no se escribirán completos en los registros de la
+  aplicación.
+
+El código general es compartible y permite solicitar el ingreso a la salida. No
+reemplaza la identidad del participante: las acciones posteriores se autorizan
+con la cuenta registrada o con la credencial privada del invitado.
+
 ## Restricciones que también protegerá la base de datos
 
 - Email de usuario único.
-- Código de invitación único.
+- Código general de acceso único.
+- Credencial privada de invitado única.
 - Un usuario registrado no puede participar dos veces en la misma salida.
 - Un participante tiene como máximo un voto.
 - Las claves foráneas conservan las relaciones entre las entidades.
@@ -288,6 +339,7 @@ salida también se validarán en el dominio y en los casos de uso.
 - Edición o eliminación de propuestas.
 - Eliminación definitiva de salidas.
 - Administración completa del catálogo.
+- Invitaciones individuales con seguimiento de aceptación o rechazo.
 
 Estas decisiones pueden modificarse a medida que se pruebe la aplicación. Este
 documento describe el punto de partida, no un contrato inmutable.

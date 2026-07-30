@@ -9,3 +9,4 @@ C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmig
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\refint\ReunionesDeAmigos.Domain.dll
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ReunionesDeAmigos.Domain.pdb
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ref\ReunionesDeAmigos.Domain.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Domain\obj\Debug\net8.0\ReunionesDeAmigos.Domain.sourcelink.json

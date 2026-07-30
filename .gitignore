@@ -1,0 +1,30 @@
+# Compilación .NET
+**/bin/
+**/obj/
+
+# Visual Studio y herramientas
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Resultados de pruebas y cobertura
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Publicaciones y paquetes
+publish/
+artifacts/
+*.nupkg
+
+# Configuración local y secretos
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+
+# Sistemas operativos
+.DS_Store
+Thumbs.db

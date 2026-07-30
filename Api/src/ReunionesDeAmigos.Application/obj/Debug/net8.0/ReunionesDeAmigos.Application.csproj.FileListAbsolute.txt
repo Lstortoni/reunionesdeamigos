@@ -13,3 +13,4 @@ C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmig
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\refint\ReunionesDeAmigos.Application.dll
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.pdb
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ref\ReunionesDeAmigos.Application.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Application\obj\Debug\net8.0\ReunionesDeAmigos.Application.sourcelink.json
