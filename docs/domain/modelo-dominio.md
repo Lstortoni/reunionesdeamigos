@@ -274,6 +274,7 @@ Representa la elección de un participante.
 Datos iniciales:
 
 - Identificador.
+- Salida.
 - Participante.
 - Propuesta elegida.
 - Fecha de creación.

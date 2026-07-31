@@ -16,3 +16,5 @@ C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmig
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.pdb
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ref\ReunionesDeAmigos.Infrastructure.dll
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.sourcelink.json
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\bin\Debug\net8.0\ReunionesDeAmigos.Infrastructure.runtimeconfig.json
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Infrastructure\obj\Debug\net8.0\ReunionesDeAmigos.Infrastructure.genruntimeconfig.cache

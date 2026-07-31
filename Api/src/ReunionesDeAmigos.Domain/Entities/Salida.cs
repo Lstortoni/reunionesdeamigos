@@ -248,6 +248,7 @@ public sealed class Salida
         }
 
         var voto = Voto.Crear(
+            Id,
             participanteSalidaId,
             propuestaId,
             fechaVoto);
