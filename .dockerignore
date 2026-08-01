@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+.git/
+.agents/
+.codex/
+.env
+.env.*
+compose.yaml

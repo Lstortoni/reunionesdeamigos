@@ -1,0 +1,26 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: reuniones-postgres:17
+    container_name: reuniones-postgres
+    environment:
+      POSTGRES_DB: reuniones_de_amigos
+      POSTGRES_USER: reuniones
+      POSTGRES_PASSWORD: cambiar_password_local
+      TZ: America/Argentina/Buenos_Aires
+      PGTZ: America/Argentina/Buenos_Aires
+    ports:
+      - "5433:5432"
+    volumes:
+      - reuniones_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reuniones -d reuniones_de_amigos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  reuniones_postgres_data:

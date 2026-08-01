@@ -2,8 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ReunionesDeAmigos.Application.Interfaces.Repositories;
+using ReunionesDeAmigos.Application.Interfaces.Services;
 using ReunionesDeAmigos.Infrastructure.Persistence;
 using ReunionesDeAmigos.Infrastructure.Persistence.Repositories;
+using ReunionesDeAmigos.Infrastructure.Security;
+using ReunionesDeAmigos.Infrastructure.Time;
 
 namespace ReunionesDeAmigos.Infrastructure;
 
@@ -24,6 +27,9 @@ public static class DependencyInjection
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<ILugarRepository, LugarRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddSingleton<IClock, SystemClock>();
+        services.AddSingleton<ICodigoAccesoGenerator, CodigoAccesoGenerator>();
+        services.AddSingleton<ICredencialInvitadoService, CredencialInvitadoService>();
 
         return services;
     }

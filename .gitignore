@@ -23,6 +23,9 @@ artifacts/
 .env
 .env.*
 !.env.example
+
+# Configuración local de Docker con credenciales de desarrollo
+compose.yaml
 appsettings.Local.json
 
 # Sistemas operativos
