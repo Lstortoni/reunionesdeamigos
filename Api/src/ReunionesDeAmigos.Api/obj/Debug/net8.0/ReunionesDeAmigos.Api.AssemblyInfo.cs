@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReunionesDeAmigos.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bf50db46a7d42dd63f1fdc310674a581a8c479c0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dbda3f798eef34c9a57a9c2b3692f46e570fe88b")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReunionesDeAmigos.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReunionesDeAmigos.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

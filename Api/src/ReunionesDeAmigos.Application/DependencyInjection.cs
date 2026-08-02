@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<IPropuestaService, PropuestaService>();
         services.AddScoped<IVotoService, VotoService>();
         services.AddScoped<ILugarService, LugarService>();
+        services.AddScoped<IUsuarioService, UsuarioService>();
 
         return services;
     }
