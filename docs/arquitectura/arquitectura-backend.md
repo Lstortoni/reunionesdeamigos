@@ -249,6 +249,54 @@ Aquí estarán:
 
 Infrastructure puede depender de Application porque implementa sus interfaces.
 
+## Autenticación inicial
+
+Los usuarios registrados utilizarán email y contraseña. La contraseña original
+entrará únicamente en el caso de uso de registro o inicio de sesión y nunca se
+guardará ni se incluirá en un DTO de respuesta.
+
+```text
+Registro
+    ↓
+Application valida la solicitud
+    ↓
+IPasswordHasher
+    ↓
+Infrastructure genera PasswordHash
+    ↓
+Usuario y PostgreSQL guardan solamente PasswordHash
+```
+
+Domain no conocerá el algoritmo de hash. Recibirá el valor ya generado para
+proteger la creación de la entidad. La generación y verificación se expondrán a
+Application mediante `IPasswordHasher` y se implementarán en Infrastructure.
+
+El inicio de sesión buscará el usuario por email, verificará la contraseña y
+utilizará `IAccessTokenGenerator` para emitir un JWT válido inicialmente durante
+60 minutos. El token incluirá el `UsuarioId` y la API lo obtendrá desde la
+identidad autenticada, en lugar de aceptar identificadores de usuario libres en
+operaciones protegidas.
+
+```text
+Login
+    ↓
+Email + contraseña
+    ↓
+Verificación del PasswordHash
+    ↓
+JWT con UsuarioId
+    ↓
+Authorization: Bearer <token>
+```
+
+Los invitados conservarán un mecanismo separado: código general para encontrar
+la salida y credencial privada para acreditar sus acciones posteriores. En el
+MVP no recibirán un JWT.
+
+Quedan fuera del alcance inicial los refresh tokens, confirmación de email,
+recuperación de contraseña, doble factor y proveedores externos. Estas mejoras
+se incorporarán después del primer flujo autenticado completo.
+
 ## Unit of Work
 
 `IUnitOfWork` permite que Application confirme cambios sin conocer

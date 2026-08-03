@@ -49,12 +49,14 @@ Datos iniciales:
 - Identificador.
 - Nombre.
 - Email único.
+- Hash de contraseña.
 - Fecha de creación.
 - Estado activo o inactivo.
 
-La contraseña y los detalles de autenticación se resolverán con el mecanismo de
-identidad de la infraestructura. El dominio no almacenará contraseñas en texto
-plano.
+El usuario se registra con nombre, email y contraseña. La contraseña original
+solo existe durante la solicitud: Infrastructure genera un hash seguro y
+Application entrega únicamente ese hash al dominio para crear el usuario. Ni la
+contraseña ni su hash se exponen en los DTO de respuesta.
 
 Solo un usuario registrado puede crear una salida.
 
@@ -309,7 +311,16 @@ prácticas desde el comienzo:
 - Todo acceso a la API utilizará HTTPS fuera del entorno local.
 - El código general será aleatorio, único y suficientemente difícil de adivinar.
 - La API limitará intentos repetidos de búsqueda por código.
-- Los usuarios registrados se autenticarán con mecanismos estándar.
+- Los usuarios registrados se autenticarán con email y contraseña.
+- El email será único y la contraseña tendrá inicialmente un mínimo de ocho
+  caracteres.
+- Las contraseñas nunca se almacenarán ni registrarán en texto plano. Se
+  guardará solamente un hash generado con un algoritmo específico para
+  contraseñas.
+- Un inicio de sesión válido entregará un JWT de acceso con una duración inicial
+  de 60 minutos. El token identificará al usuario mediante su `UsuarioId`.
+- Los endpoints protegidos obtendrán el usuario desde el JWT; no confiarán en un
+  `usuarioId` enviado libremente por el cliente.
 - Las credenciales de invitados serán largas, aleatorias y no se almacenarán en
   texto plano.
 - En el MVP, los invitados utilizarán directamente esa credencial para
@@ -350,6 +361,11 @@ salida también se validarán en el dominio y en los casos de uso.
 - Eliminación definitiva de salidas.
 - Administración completa del catálogo.
 - Invitaciones individuales con seguimiento de aceptación o rechazo.
+- Refresh tokens.
+- Confirmación de email.
+- Recuperación de contraseña.
+- Autenticación de doble factor.
+- Inicio de sesión con proveedores externos, como Google.
 
 Estas decisiones pueden modificarse a medida que se pruebe la aplicación. Este
 documento describe el punto de partida, no un contrato inmutable.

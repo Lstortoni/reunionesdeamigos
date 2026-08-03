@@ -12,11 +12,16 @@ public sealed class Usuario
         Guid id,
         string nombre,
         string email,
+        string passwordHash,
         DateTimeOffset fechaCreacion)
     {
         Id = id;
         Nombre = ValidarTexto(nombre, 100, "El nombre del usuario es obligatorio.");
         Email = NormalizarEmail(email);
+        PasswordHash = ValidarTexto(
+            passwordHash,
+            512,
+            "El hash de contraseña del usuario es obligatorio.");
         FechaCreacion = fechaCreacion;
         Activo = true;
     }
@@ -27,6 +32,8 @@ public sealed class Usuario
 
     public string Email { get; private set; } = string.Empty;
 
+    public string PasswordHash { get; private set; } = string.Empty;
+
     public DateTimeOffset FechaCreacion { get; private set; }
 
     public bool Activo { get; private set; }
@@ -34,9 +41,15 @@ public sealed class Usuario
     public static Usuario Crear(
         string nombre,
         string email,
+        string passwordHash,
         DateTimeOffset fechaCreacion)
     {
-        return new Usuario(Guid.NewGuid(), nombre, email, fechaCreacion);
+        return new Usuario(
+            Guid.NewGuid(),
+            nombre,
+            email,
+            passwordHash,
+            fechaCreacion);
     }
 
     public void CambiarNombre(string nombre)

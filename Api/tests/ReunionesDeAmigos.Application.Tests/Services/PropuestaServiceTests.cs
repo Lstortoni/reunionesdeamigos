@@ -14,7 +14,11 @@ public sealed class PropuestaServiceTests
         var fechaActual = new DateTimeOffset(
             2026, 8, 1, 12, 0, 0, TimeSpan.Zero);
         var almacenamiento = new AlmacenamientoEnMemoria();
-        var creador = Usuario.Crear("Leo", "leo@email.com", fechaActual);
+        var creador = Usuario.Crear(
+            "Leo",
+            "leo@email.com",
+            "hash-de-prueba",
+            fechaActual);
         var salida = Salida.Crear(
             "Cena del sábado",
             null,

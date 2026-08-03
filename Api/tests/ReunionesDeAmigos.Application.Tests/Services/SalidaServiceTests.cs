@@ -17,6 +17,7 @@ public sealed class SalidaServiceTests
         var creador = Usuario.Crear(
             "Leo",
             "leo@email.com",
+            "hash-de-prueba",
             fechaActual);
         almacenamiento.Usuarios.Add(creador);
 

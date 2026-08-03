@@ -126,6 +126,7 @@ public sealed class SalidaTests
         var creador = Usuario.Crear(
             "Leo",
             "leo@email.com",
+            "hash-de-prueba",
             FechaActual);
 
         return Salida.Crear(
