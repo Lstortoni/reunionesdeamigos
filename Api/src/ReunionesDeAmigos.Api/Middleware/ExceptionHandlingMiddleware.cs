@@ -47,6 +47,10 @@ public sealed class ExceptionHandlingMiddleware(
                 StatusCodes.Status409Conflict,
                 "Conflicto",
                 exception.Message),
+            InvalidCredentialsException => (
+                StatusCodes.Status401Unauthorized,
+                "Credenciales inválidas",
+                exception.Message),
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "Error interno",

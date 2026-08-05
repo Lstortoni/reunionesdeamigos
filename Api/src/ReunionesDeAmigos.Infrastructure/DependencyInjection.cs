@@ -30,6 +30,18 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<ICodigoAccesoGenerator, CodigoAccesoGenerator>();
         services.AddSingleton<ICredencialInvitadoService, CredencialInvitadoService>();
+        services.Configure<JwtOptions>(options =>
+        {
+            options.Issuer = configuration["Jwt:Issuer"] ?? string.Empty;
+            options.Audience = configuration["Jwt:Audience"] ?? string.Empty;
+            options.SigningKey = configuration["Jwt:SigningKey"] ?? string.Empty;
+            _ = int.TryParse(
+                configuration["Jwt:ExpirationMinutes"],
+                out var expirationMinutes);
+            options.ExpirationMinutes = expirationMinutes;
+        });
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<IAccessTokenGenerator, JwtAccessTokenGenerator>();
 
         return services;
     }

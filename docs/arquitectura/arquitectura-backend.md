@@ -277,6 +277,11 @@ utilizará `IAccessTokenGenerator` para emitir un JWT válido inicialmente duran
 identidad autenticada, en lugar de aceptar identificadores de usuario libres en
 operaciones protegidas.
 
+Como el MVP todavía no exige confirmación de email, tanto el registro exitoso
+como el inicio de sesión devolverán un `AutenticacionDto` con el usuario, el JWT
+y su fecha de vencimiento. De esta manera, una cuenta recién creada queda
+autenticada sin realizar una segunda solicitud de login.
+
 ```text
 Login
     ↓
@@ -474,7 +479,144 @@ repositorios ni base de datos.
 - Repositorios para `Usuario`, `Salida` y `Lugar`.
 - Participantes, propuestas y votos administrados mediante `Salida`.
 - `UnitOfWork` como abstracción de `SaveChangesAsync`.
-- PostgreSQL y Entity Framework se incorporarán después de validar Application.
+- Persistencia real implementada con PostgreSQL y Entity Framework Core.
 
 Estas decisiones pueden ajustarse si la implementación demuestra que otra
 distribución resulta más clara.
+
+## Estado implementado y verificado
+
+La infraestructura real ya está configurada con PostgreSQL 17, Entity Framework
+Core y migraciones. La base se ejecuta en Docker y conserva sus datos mediante
+el volumen `reuniones_postgres_data`.
+
+Las migraciones aplicadas son:
+
+```text
+InitialCreate
+AgregarAutenticacionUsuarios
+```
+
+La autenticación inicial también está implementada:
+
+- `PasswordHasher` genera y verifica hashes mediante ASP.NET Core Identity.
+- La contraseña original nunca se guarda en PostgreSQL.
+- `JwtAccessTokenGenerator` genera JWT firmados con vigencia de 60 minutos.
+- La API valida emisor, destinatario, firma y vencimiento mediante JWT Bearer.
+- El middleware central transforma las excepciones conocidas en respuestas HTTP.
+
+### Endpoints de autenticación
+
+`AuthController` ofrece inicialmente dos endpoints anónimos:
+
+```http
+POST /api/auth/registrar
+POST /api/auth/login
+```
+
+Los dos devuelven un `AutenticacionDto` compuesto por:
+
+```text
+Usuario
+AccessToken
+ExpiraEn
+```
+
+El registro responde `201 Created` y el login exitoso responde `200 OK`. Ambos
+flujos fueron comprobados con Postman contra la API y PostgreSQL ejecutados en
+Docker.
+
+Los futuros endpoints privados utilizarán `[Authorize]`. El cliente enviará el
+JWT mediante:
+
+```http
+Authorization: Bearer <token>
+```
+
+Registro y login utilizan `[AllowAnonymous]` porque para obtener el primer token
+el usuario todavía no puede estar autenticado.
+
+## Ejecución local y con Docker
+
+La configuración efectiva depende de dónde se ejecute la API.
+
+### API ejecutada localmente
+
+La API lee la conexión de `appsettings.Development.json`:
+
+```text
+API local -> localhost:5433 -> PostgreSQL en Docker
+```
+
+El puerto `5433` es el puerto publicado en Windows por el contenedor de
+PostgreSQL.
+
+### API ejecutada en Docker
+
+Compose proporciona variables de entorno que tienen prioridad sobre los valores
+de `appsettings.json` y `appsettings.Development.json`:
+
+```text
+API en Docker -> postgres:5432 -> PostgreSQL en Docker
+```
+
+Dentro de la red de Compose se utiliza `postgres`, que es el nombre del servicio,
+y el puerto interno estándar `5432`. `localhost` dentro del contenedor de la API
+representaría a ese mismo contenedor, no a PostgreSQL.
+
+La publicación de puertos de la API es:
+
+```yaml
+ports:
+  - "5080:8080"
+```
+
+Esto significa:
+
+```text
+localhost:5080 en Windows -> puerto 8080 del contenedor de la API
+```
+
+Swagger queda disponible en desarrollo en:
+
+```text
+http://localhost:5080/swagger
+```
+
+### Archivos Docker
+
+- `Dockerfile.postgres` construye la imagen de PostgreSQL.
+- `Api/src/ReunionesDeAmigos.Api/Dockerfile` restaura y publica los cuatro
+  proyectos .NET mediante una construcción multietapa.
+- `compose.yaml` define los servicios `postgres` y `api`.
+- `api` espera a que el health check de PostgreSQL indique que la base está
+  disponible.
+
+Comandos habituales desde la raíz del repositorio:
+
+```powershell
+docker compose config
+docker compose build api
+docker compose up -d
+docker compose ps
+docker compose logs api
+```
+
+Las migraciones no se ejecutan automáticamente al iniciar el contenedor de la
+API. Se administran explícitamente con las herramientas de Entity Framework.
+
+## Siguiente paso
+
+El siguiente caso pequeño será un endpoint protegido como
+`GET /api/usuarios/me`. Permitirá comprobar tres escenarios antes de implementar
+los controllers del negocio:
+
+```text
+Sin token      -> 401 Unauthorized
+Token inválido -> 401 Unauthorized
+Token válido   -> 200 OK
+```
+
+Los roles todavía no forman parte del modelo. Se definirán cuando exista un
+caso concreto que los necesite, posiblemente la administración del catálogo de
+lugares.

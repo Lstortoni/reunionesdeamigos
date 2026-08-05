@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<IVotoService, VotoService>();
         services.AddScoped<ILugarService, LugarService>();
         services.AddScoped<IUsuarioService, UsuarioService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

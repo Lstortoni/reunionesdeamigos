@@ -5,11 +5,11 @@ namespace ReunionesDeAmigos.Application.Interfaces.Services;
 
 public interface IAuthService
 {
-    Task<UsuarioDto> RegistrarAsync(
+    Task<AutenticacionDto> RegistrarAsync(
         CrearUsuarioRequest request,
         CancellationToken cancellationToken);
 
-    Task<LoginDto> IniciarSesionAsync(
+    Task<AutenticacionDto> IniciarSesionAsync(
         LoginRequest request,
         CancellationToken cancellationToken);
 }
