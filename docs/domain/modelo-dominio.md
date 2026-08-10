@@ -12,6 +12,10 @@ finalizado el período de propuestas.
 El lugar elegido puede pertenecer al catálogo público o ser una opción manual,
 como una casa particular o pedir comida.
 
+Al crear una salida se cargan exactamente tres propuestas iniciales. Pueden
+combinar lugares del catálogo con opciones manuales. El creador queda registrado
+como participante y como autor de esas propuestas.
+
 ## Modelo general
 
 ```text
@@ -34,6 +38,9 @@ Propuesta
 
 Lugar
   └── puede utilizarse en muchas Propuestas
+
+Ciudad
+  └── contiene muchos Lugares
 ```
 
 Las propuestas y los votos se relacionan con `ParticipanteSalida`, no
@@ -186,6 +193,28 @@ La aplicación recibe el valor original de la credencial una sola vez y lo
 guarda en el almacenamiento seguro del dispositivo. Esto permite que el
 invitado vuelva a entrar sin crear otro participante.
 
+## Ciudad
+
+Representa una ciudad disponible para explorar el catálogo. Evita utilizar el
+nombre de la ciudad como texto libre en cada lugar y permite filtrar mediante un
+identificador estable.
+
+Datos iniciales:
+
+- Identificador.
+- Nombre.
+- Provincia o región.
+- País.
+- Estado activo o inactivo.
+
+La combinación de país, provincia y nombre debe ser única. Inicialmente
+provincia y país se mantienen como textos controlados; no son entidades
+independientes.
+
+Las migraciones modifican solamente la estructura geográfica. Las ciudades y
+los lugares iniciales se cargarán mediante scripts separados ubicados en
+`scripts/database`. Los scripts deben poder repetirse sin duplicar registros.
+
 ## Lugar
 
 Representa un lugar permanente del catálogo público y existe
@@ -198,7 +227,7 @@ Datos iniciales:
 - Descripción opcional.
 - Dirección.
 - Barrio.
-- Ciudad.
+- Ciudad asociada mediante `CiudadId`.
 - Tipo de lugar.
 - Latitud y longitud opcionales.
 - Estado activo o inactivo.
@@ -218,6 +247,11 @@ crear propuestas nuevas.
 
 La búsqueda y consulta del catálogo son públicas. La creación, modificación y
 desactivación de lugares requieren un usuario con rol administrador.
+
+La falta de un lugar en el catálogo no impide organizar una salida: un
+participante puede crear una propuesta manual que pertenezca solamente a esa
+salida. En una etapa posterior podrá evaluarse una carga comunitaria moderada o
+la integración con un proveedor externo de lugares.
 
 Inicialmente podrán cargarse lugares mediante datos precargados o endpoints
 administrativos protegidos. Más adelante podrá incorporarse una interfaz

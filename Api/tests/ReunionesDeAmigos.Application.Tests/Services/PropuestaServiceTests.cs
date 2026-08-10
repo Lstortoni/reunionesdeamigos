@@ -28,12 +28,16 @@ public sealed class PropuestaServiceTests
             "CENA-1234",
             creador,
             fechaActual);
+        var ciudad = Ciudad.Crear(
+            "La Plata",
+            "Buenos Aires",
+            "Argentina");
         var lugar = Lugar.Crear(
             "La Trattoria",
             null,
             "Calle 12",
             "Centro",
-            "La Plata",
+            ciudad,
             TipoLugar.Restaurante);
         almacenamiento.Salidas.Add(salida);
         almacenamiento.Lugares.Add(lugar);

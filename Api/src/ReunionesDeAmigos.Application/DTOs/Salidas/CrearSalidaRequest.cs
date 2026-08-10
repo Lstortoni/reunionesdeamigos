@@ -5,4 +5,5 @@ public sealed record CrearSalidaRequest(
     string? Descripcion,
     DateTimeOffset FechaEncuentro,
     int DiasParaPropuestas,
-    int DiasParaVotar);
+    int DiasParaVotar,
+    IReadOnlyCollection<CrearPropuestaInicialRequest> PropuestasIniciales);

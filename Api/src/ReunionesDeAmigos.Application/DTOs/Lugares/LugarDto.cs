@@ -1,4 +1,5 @@
 using ReunionesDeAmigos.Domain.Enums;
+using ReunionesDeAmigos.Application.DTOs.Ciudades;
 
 namespace ReunionesDeAmigos.Application.DTOs.Lugares;
 
@@ -8,7 +9,7 @@ public sealed record LugarDto(
     string? Descripcion,
     string Direccion,
     string? Barrio,
-    string Ciudad,
+    CiudadDto Ciudad,
     TipoLugar Tipo,
     decimal? Latitud,
     decimal? Longitud,

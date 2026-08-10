@@ -13,7 +13,7 @@ public interface ILugarRepository
         string? texto,
         TipoLugar? tipo,
         string? barrio,
-        string? ciudad,
+        Guid? ciudadId,
         CancellationToken cancellationToken);
 
     Task AgregarAsync(

@@ -1,0 +1,26 @@
+@page "/inicio"
+@inject ISessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Inicio</PageTitle>
+
+<section class="welcome-page">
+    <div class="welcome-card">
+        <p class="eyebrow">Sesión iniciada</p>
+        <h1>Hola, @(SessionService.UsuarioActual?.Nombre ?? "amigo")</h1>
+        <p>
+            La app se conectó con la API y guardó tu token de forma segura.
+        </p>
+        <button class="btn btn-outline-secondary" @onclick="CerrarSesion">
+            Cerrar sesión
+        </button>
+    </div>
+</section>
+
+@code {
+    private void CerrarSesion()
+    {
+        SessionService.Cerrar();
+        Navigation.NavigateTo("/");
+    }
+}

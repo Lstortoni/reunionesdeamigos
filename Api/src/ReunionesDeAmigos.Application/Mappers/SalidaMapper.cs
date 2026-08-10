@@ -12,6 +12,9 @@ internal static class SalidaMapper
         var participantes = salida.Participantes
             .Select(ParticipanteSalidaMapper.ToDto)
             .ToArray();
+        var propuestas = salida.Propuestas
+            .Select(PropuestaMapper.ToDto)
+            .ToArray();
 
         return new SalidaDto(
             salida.Id,
@@ -23,6 +26,7 @@ internal static class SalidaMapper
             salida.CodigoAcceso,
             salida.ObtenerEstado(fechaActual),
             salida.CreadorId,
-            participantes);
+            participantes,
+            propuestas);
     }
 }

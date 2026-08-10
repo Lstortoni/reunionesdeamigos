@@ -24,6 +24,17 @@ internal sealed class SalidaRepository(AppDbContext dbContext)
             cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<Salida>> ObtenerPorUsuarioAsync(
+        Guid usuarioId,
+        CancellationToken cancellationToken) =>
+        await dbContext.Salidas
+            .AsNoTracking()
+            .Include(x => x.Participantes)
+            .Where(x => x.Participantes.Any(
+                participante => participante.UsuarioId == usuarioId))
+            .OrderBy(x => x.FechaEncuentro)
+            .ToArrayAsync(cancellationToken);
+
     public Task<bool> ExisteCodigoAsync(
         string codigoAcceso,
         CancellationToken cancellationToken)

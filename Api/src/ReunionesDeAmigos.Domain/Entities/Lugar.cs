@@ -15,7 +15,7 @@ public sealed class Lugar
         string? descripcion,
         string direccion,
         string? barrio,
-        string ciudad,
+        Ciudad ciudad,
         TipoLugar tipo,
         decimal? latitud,
         decimal? longitud)
@@ -28,7 +28,16 @@ public sealed class Lugar
             250,
             "La dirección del lugar es obligatoria.");
         Barrio = ValidarTextoOpcional(barrio, 100);
-        Ciudad = ValidarTextoObligatorio(ciudad, 100, "La ciudad del lugar es obligatoria.");
+        ArgumentNullException.ThrowIfNull(ciudad);
+
+        if (!ciudad.Activa)
+        {
+            throw new DomainException(
+                "No se puede crear un lugar en una ciudad inactiva.");
+        }
+
+        CiudadId = ciudad.Id;
+        Ciudad = ciudad;
         Tipo = tipo;
         ValidarCoordenadas(latitud, longitud);
         Latitud = latitud;
@@ -46,7 +55,9 @@ public sealed class Lugar
 
     public string? Barrio { get; private set; }
 
-    public string Ciudad { get; private set; } = string.Empty;
+    public Guid CiudadId { get; private set; }
+
+    public Ciudad Ciudad { get; private set; } = null!;
 
     public TipoLugar Tipo { get; private set; }
 
@@ -61,7 +72,7 @@ public sealed class Lugar
         string? descripcion,
         string direccion,
         string? barrio,
-        string ciudad,
+        Ciudad ciudad,
         TipoLugar tipo,
         decimal? latitud = null,
         decimal? longitud = null)

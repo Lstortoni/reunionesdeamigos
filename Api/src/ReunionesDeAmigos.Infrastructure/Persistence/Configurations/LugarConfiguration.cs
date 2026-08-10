@@ -18,9 +18,12 @@ internal sealed class LugarConfiguration : IEntityTypeConfiguration<Lugar>
         builder.Property(x => x.Descripcion).HasMaxLength(1000);
         builder.Property(x => x.Direccion).HasMaxLength(250).IsRequired();
         builder.Property(x => x.Barrio).HasMaxLength(100);
-        builder.Property(x => x.Ciudad).HasMaxLength(100).IsRequired();
         builder.Property(x => x.Latitud).HasPrecision(9, 6);
         builder.Property(x => x.Longitud).HasPrecision(9, 6);
-        builder.HasIndex(x => new { x.Ciudad, x.Tipo, x.Activo });
+        builder.HasOne(x => x.Ciudad)
+            .WithMany()
+            .HasForeignKey(x => x.CiudadId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(x => new { x.CiudadId, x.Tipo, x.Activo });
     }
 }

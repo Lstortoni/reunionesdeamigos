@@ -142,12 +142,17 @@ public sealed class SalidaTests
 
     private static Lugar CrearLugar()
     {
+        var ciudad = Ciudad.Crear(
+            "La Plata",
+            "Buenos Aires",
+            "Argentina");
+
         return Lugar.Crear(
             "La Trattoria",
             "Restaurante italiano",
             "Calle 12",
             "Centro",
-            "La Plata",
+            ciudad,
             TipoLugar.Restaurante);
     }
 }

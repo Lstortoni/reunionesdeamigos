@@ -6,4 +6,4 @@ public sealed record BuscarLugaresRequest(
     string? Texto,
     TipoLugar? Tipo,
     string? Barrio,
-    string? Ciudad);
+    Guid? CiudadId);

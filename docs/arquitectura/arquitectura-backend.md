@@ -63,6 +63,7 @@ Usuario
 Salida
 ParticipanteSalida
 Lugar
+Ciudad
 Propuesta
 Voto
 ```
@@ -151,6 +152,7 @@ IParticipanteSalidaService
 IPropuestaService
 IVotoService
 ILugarService
+ICiudadService
 ```
 
 La API dependerá de estas interfaces y no de implementaciones concretas.
@@ -180,6 +182,7 @@ Las interfaces de repositorios están en `Application`:
 ISalidaRepository
 IUsuarioRepository
 ILugarRepository
+ICiudadRepository
 ```
 
 Sus implementaciones con Entity Framework estarán en `Infrastructure`.
@@ -476,7 +479,7 @@ repositorios ni base de datos.
 - Reglas propias del negocio dentro de las entidades.
 - Servicios para coordinar casos de uso.
 - Interfaces para servicios y repositorios.
-- Repositorios para `Usuario`, `Salida` y `Lugar`.
+- Repositorios para `Usuario`, `Salida`, `Lugar` y `Ciudad`.
 - Participantes, propuestas y votos administrados mediante `Salida`.
 - `UnitOfWork` como abstracción de `SaveChangesAsync`.
 - Persistencia real implementada con PostgreSQL y Entity Framework Core.
@@ -605,11 +608,10 @@ docker compose logs api
 Las migraciones no se ejecutan automáticamente al iniciar el contenedor de la
 API. Se administran explícitamente con las herramientas de Entity Framework.
 
-## Siguiente paso
+## Endpoint de usuario autenticado
 
-El siguiente caso pequeño será un endpoint protegido como
-`GET /api/usuarios/me`. Permitirá comprobar tres escenarios antes de implementar
-los controllers del negocio:
+El endpoint protegido `GET /api/usuarios/me` permite comprobar la autenticación
+antes de implementar los controllers del negocio:
 
 ```text
 Sin token      -> 401 Unauthorized
@@ -617,6 +619,59 @@ Token inválido -> 401 Unauthorized
 Token válido   -> 200 OK
 ```
 
+El cliente obtiene el JWT mediante registro o login, lo conserva y lo envía en
+el encabezado `Authorization`. JWT Bearer valida el token antes de ejecutar el
+controller. `UsuariosController` lee el claim `sub`, que contiene el ID del
+usuario, y `IUsuarioService` recupera sus datos. El endpoint no recibe un ID
+libre en la URL ni en el body.
+
+## Siguiente paso
+
+Después de probar los tres escenarios de `/api/usuarios/me`, se puede retirar el
+controller de ejemplo `WeatherForecastController` y comenzar los controllers de
+salidas, participantes, propuestas y votos.
+
 Los roles todavía no forman parte del modelo. Se definirán cuando exista un
 caso concreto que los necesite, posiblemente la administración del catálogo de
 lugares.
+
+## Controllers iniciales del negocio
+
+El catálogo geográfico expone consultas públicas:
+
+```http
+GET /api/ciudades
+GET /api/lugares?ciudadId={ciudadId}
+GET /api/lugares/{lugarId}
+```
+
+`Lugar` se relaciona con la entidad `Ciudad` mediante `CiudadId`. La ciudad no
+mantiene una colección de lugares en memoria: los lugares se consultan de forma
+independiente y eficiente mediante `ILugarRepository`.
+
+Las primeras operaciones de salidas requieren un JWT válido:
+
+```http
+POST /api/salidas
+GET /api/salidas/mias
+GET /api/salidas/{salidaId}
+```
+
+Al crear, `SalidasController` obtiene el creador desde el claim `sub`; el body no
+acepta un identificador de usuario. La solicitud contiene exactamente tres
+propuestas iniciales, que pueden ser de catálogo o manuales. `SalidaService`
+reutiliza los comportamientos existentes de `Salida` y guarda la salida, su
+participante creador y las propuestas en una sola operación. Al consultar,
+`SalidaService` verifica que
+el usuario autenticado sea participante. Conocer el identificador de otra
+salida no concede acceso a sus datos.
+
+`GET /api/salidas/mias` alimenta la pantalla principal de la app. Devuelve un
+resumen ordenado por fecha del encuentro con estado, cantidad de participantes
+y la indicación de si el usuario autenticado es el creador. La consulta no carga
+propuestas ni votos porque esa pantalla no utiliza esos datos.
+
+Las fechas recibidas con un desplazamiento horario, por ejemplo `-03:00` para
+Argentina, se normalizan a UTC en Application antes de persistirse. PostgreSQL
+guarda el instante en UTC y la app lo convertirá nuevamente a la zona horaria
+del dispositivo al mostrarlo.

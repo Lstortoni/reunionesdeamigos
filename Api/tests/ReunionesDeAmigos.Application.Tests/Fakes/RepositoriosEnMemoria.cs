@@ -24,6 +24,18 @@ internal sealed class SalidaRepositoryEnMemoria(
                 salida => salida.CodigoAcceso == codigoAcceso));
     }
 
+    public Task<IReadOnlyCollection<Salida>> ObtenerPorUsuarioAsync(
+        Guid usuarioId,
+        CancellationToken cancellationToken)
+    {
+        var salidas = almacenamiento.Salidas
+            .Where(salida => salida.TieneParticipanteRegistrado(usuarioId))
+            .OrderBy(salida => salida.FechaEncuentro)
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyCollection<Salida>>(salidas);
+    }
+
     public Task<bool> ExisteCodigoAsync(
         string codigoAcceso,
         CancellationToken cancellationToken)
@@ -86,7 +98,7 @@ internal sealed class LugarRepositoryEnMemoria(
         string? texto,
         TipoLugar? tipo,
         string? barrio,
-        string? ciudad,
+        Guid? ciudadId,
         CancellationToken cancellationToken)
     {
         var lugares = almacenamiento.Lugares
@@ -95,8 +107,8 @@ internal sealed class LugarRepositoryEnMemoria(
             .Where(lugar => !tipo.HasValue || lugar.Tipo == tipo.Value)
             .Where(lugar => barrio is null
                 || string.Equals(lugar.Barrio, barrio, StringComparison.OrdinalIgnoreCase))
-            .Where(lugar => ciudad is null
-                || string.Equals(lugar.Ciudad, ciudad, StringComparison.OrdinalIgnoreCase))
+            .Where(lugar => !ciudadId.HasValue
+                || lugar.CiudadId == ciudadId.Value)
             .ToArray();
 
         return Task.FromResult<IReadOnlyCollection<Lugar>>(lugares);

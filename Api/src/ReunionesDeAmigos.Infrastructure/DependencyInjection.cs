@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<ISalidaRepository, SalidaRepository>();
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<ILugarRepository, LugarRepository>();
+        services.AddScoped<ICiudadRepository, CiudadRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<ICodigoAccesoGenerator, CodigoAccesoGenerator>();

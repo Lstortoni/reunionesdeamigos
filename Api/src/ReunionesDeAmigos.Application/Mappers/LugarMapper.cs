@@ -13,7 +13,7 @@ internal static class LugarMapper
             lugar.Descripcion,
             lugar.Direccion,
             lugar.Barrio,
-            lugar.Ciudad,
+            CiudadMapper.ToDto(lugar.Ciudad),
             lugar.Tipo,
             lugar.Latitud,
             lugar.Longitud,

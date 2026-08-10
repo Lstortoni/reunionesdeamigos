@@ -1,0 +1,126 @@
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+    background: #f4f1ea;
+    color: #27231f;
+}
+
+.app-shell {
+    min-height: 100vh;
+}
+
+.auth-page,
+.welcome-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background:
+        radial-gradient(circle at top right, rgba(231, 168, 95, 0.32), transparent 38%),
+        linear-gradient(145deg, #f8f4ec 0%, #eee5d8 100%);
+}
+
+.auth-card,
+.welcome-card {
+    width: min(100%, 430px);
+    padding: 2rem;
+    border: 1px solid rgba(92, 70, 48, 0.12);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 24px 60px rgba(69, 52, 35, 0.12);
+}
+
+.brand-mark {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 1.4rem;
+    border-radius: 16px;
+    background: #d66f3c;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.eyebrow {
+    margin-bottom: 0.5rem;
+    color: #9a4f2b;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.auth-card h1,
+.welcome-card h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 7vw, 2.5rem);
+    line-height: 1.08;
+}
+
+.auth-subtitle {
+    margin: 1rem 0 1.75rem;
+    color: #6d645b;
+}
+
+.form-field {
+    margin-bottom: 1.15rem;
+}
+
+.form-field label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-weight: 650;
+}
+
+.form-control {
+    min-height: 48px;
+    border-color: #d9cfc4;
+    border-radius: 12px;
+}
+
+.form-control:focus {
+    border-color: #d66f3c;
+    box-shadow: 0 0 0 0.2rem rgba(214, 111, 60, 0.16);
+}
+
+.auth-submit {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 0.45rem;
+    border: 0;
+    border-radius: 12px;
+    background: #d66f3c;
+    font-weight: 700;
+}
+
+.auth-submit:hover,
+.auth-submit:focus {
+    background: #bc5c30;
+}
+
+.auth-submit:disabled {
+    background: #cba58f;
+}
+
+.auth-error {
+    margin: 0.75rem 0;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    background: #fff0ed;
+    color: #a83d2d;
+}
+
+.auth-secondary {
+    margin: 1.5rem 0 0;
+    color: #766d64;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.welcome-card p:not(.eyebrow) {
+    margin: 1rem 0 1.5rem;
+    color: #6d645b;
+}

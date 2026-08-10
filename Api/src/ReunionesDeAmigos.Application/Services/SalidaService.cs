@@ -4,6 +4,7 @@ using ReunionesDeAmigos.Application.Interfaces.Repositories;
 using ReunionesDeAmigos.Application.Interfaces.Services;
 using ReunionesDeAmigos.Application.Mappers;
 using ReunionesDeAmigos.Domain.Entities;
+using ReunionesDeAmigos.Domain.Enums;
 
 namespace ReunionesDeAmigos.Application.Services;
 
@@ -13,6 +14,7 @@ public sealed class SalidaService : ISalidaService
 
     private readonly ISalidaRepository _salidaRepository;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly ILugarRepository _lugarRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly ICodigoAccesoGenerator _codigoAccesoGenerator;
@@ -20,12 +22,14 @@ public sealed class SalidaService : ISalidaService
     public SalidaService(
         ISalidaRepository salidaRepository,
         IUsuarioRepository usuarioRepository,
+        ILugarRepository lugarRepository,
         IUnitOfWork unitOfWork,
         IClock clock,
         ICodigoAccesoGenerator codigoAccesoGenerator)
     {
         _salidaRepository = salidaRepository;
         _usuarioRepository = usuarioRepository;
+        _lugarRepository = lugarRepository;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _codigoAccesoGenerator = codigoAccesoGenerator;
@@ -50,6 +54,7 @@ public sealed class SalidaService : ISalidaService
         }
 
         var fechaActual = _clock.UtcNow;
+        var fechaEncuentroUtc = request.FechaEncuentro.ToUniversalTime();
         var fechaFinPropuestas = fechaActual.AddDays(
             request.DiasParaPropuestas);
         var fechaFinVotacion = fechaFinPropuestas.AddDays(
@@ -60,12 +65,20 @@ public sealed class SalidaService : ISalidaService
         var salida = Salida.Crear(
             request.Nombre,
             request.Descripcion,
-            request.FechaEncuentro,
+            fechaEncuentroUtc,
             fechaFinPropuestas,
             fechaFinVotacion,
             codigoAcceso,
             creador,
             fechaActual);
+
+        var participanteCreador = salida.Participantes.Single();
+        await AgregarPropuestasInicialesAsync(
+            salida,
+            participanteCreador.Id,
+            request.PropuestasIniciales,
+            fechaActual,
+            cancellationToken);
 
         await _salidaRepository.AgregarAsync(
             salida,
@@ -78,19 +91,41 @@ public sealed class SalidaService : ISalidaService
 
     public async Task<SalidaDto> ObtenerPorIdAsync(
         Guid salidaId,
+        Guid usuarioId,
         CancellationToken cancellationToken)
     {
         var salida = await _salidaRepository.ObtenerPorIdAsync(
             salidaId,
             cancellationToken);
 
-        if (salida is null)
+        if (salida is null ||
+            !salida.TieneParticipanteRegistrado(usuarioId))
         {
             throw new NotFoundException(
                 "No se encontró la salida.");
         }
 
         return SalidaMapper.ToDto(salida, _clock.UtcNow);
+    }
+
+    public async Task<IReadOnlyCollection<SalidaResumenDto>> ObtenerMiasAsync(
+        Guid usuarioId,
+        CancellationToken cancellationToken)
+    {
+        var salidas = await _salidaRepository.ObtenerPorUsuarioAsync(
+            usuarioId,
+            cancellationToken);
+        var fechaActual = _clock.UtcNow;
+
+        return salidas
+            .Select(salida => new SalidaResumenDto(
+                salida.Id,
+                salida.Nombre,
+                salida.FechaEncuentro,
+                salida.ObtenerEstado(fechaActual),
+                salida.CreadorId == usuarioId,
+                salida.Participantes.Count))
+            .ToArray();
     }
 
     private async Task<string> GenerarCodigoUnicoAsync(
@@ -128,5 +163,85 @@ public sealed class SalidaService : ISalidaService
             throw new ApplicationValidationException(
                 "La cantidad de días para votar debe ser mayor que cero.");
         }
+
+        if (request.PropuestasIniciales is null ||
+            request.PropuestasIniciales.Count != 3)
+        {
+            throw new ApplicationValidationException(
+                "La salida debe tener exactamente tres propuestas iniciales.");
+        }
+    }
+
+    private async Task AgregarPropuestasInicialesAsync(
+        Salida salida,
+        Guid participanteCreadorId,
+        IReadOnlyCollection<CrearPropuestaInicialRequest> propuestas,
+        DateTimeOffset fechaActual,
+        CancellationToken cancellationToken)
+    {
+        foreach (var propuesta in propuestas)
+        {
+            ArgumentNullException.ThrowIfNull(propuesta);
+
+            switch (propuesta.Tipo)
+            {
+                case TipoPropuesta.LugarCatalogo:
+                    await AgregarPropuestaDeCatalogoAsync(
+                        salida,
+                        participanteCreadorId,
+                        propuesta,
+                        fechaActual,
+                        cancellationToken);
+                    break;
+
+                case TipoPropuesta.Manual:
+                    if (propuesta.LugarId.HasValue)
+                    {
+                        throw new ApplicationValidationException(
+                            "Una propuesta manual no puede indicar LugarId.");
+                    }
+
+                    salida.AgregarPropuestaManual(
+                        participanteCreadorId,
+                        propuesta.NombreManual ?? string.Empty,
+                        propuesta.DescripcionManual,
+                        propuesta.DireccionManual,
+                        fechaActual);
+                    break;
+
+                default:
+                    throw new ApplicationValidationException(
+                        "El tipo de propuesta inicial no es válido.");
+            }
+        }
+    }
+
+    private async Task AgregarPropuestaDeCatalogoAsync(
+        Salida salida,
+        Guid participanteCreadorId,
+        CrearPropuestaInicialRequest propuesta,
+        DateTimeOffset fechaActual,
+        CancellationToken cancellationToken)
+    {
+        if (!propuesta.LugarId.HasValue)
+        {
+            throw new ApplicationValidationException(
+                "Una propuesta de catálogo debe indicar LugarId.");
+        }
+
+        var lugar = await _lugarRepository.ObtenerPorIdAsync(
+            propuesta.LugarId.Value,
+            cancellationToken);
+
+        if (lugar is null)
+        {
+            throw new NotFoundException(
+                "No se encontró uno de los lugares seleccionados.");
+        }
+
+        salida.AgregarPropuestaDeCatalogo(
+            participanteCreadorId,
+            lugar,
+            fechaActual);
     }
 }

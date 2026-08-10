@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
+using ReunionesDeAmigos.App.Services;
+
 namespace ReunionesDeAmigos.App;
 
 public static class MauiProgram
@@ -15,6 +17,19 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddMauiBlazorWebView();
+
+#if ANDROID
+		const string apiBaseUrl = "http://10.0.2.2:5080/";
+#else
+		const string apiBaseUrl = "http://localhost:5080/";
+#endif
+
+		builder.Services.AddSingleton(new HttpClient
+		{
+			BaseAddress = new Uri(apiBaseUrl)
+		});
+		builder.Services.AddSingleton<IAuthApiService, AuthApiService>();
+		builder.Services.AddSingleton<ISessionService, SessionService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

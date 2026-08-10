@@ -42,7 +42,7 @@ public sealed class LugarService : ILugarService
             NormalizarFiltro(request.Texto),
             request.Tipo,
             NormalizarFiltro(request.Barrio),
-            NormalizarFiltro(request.Ciudad),
+            request.CiudadId,
             cancellationToken);
 
         return lugares

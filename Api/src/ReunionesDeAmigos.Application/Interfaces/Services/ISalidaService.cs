@@ -11,5 +11,10 @@ public interface ISalidaService
 
     Task<SalidaDto> ObtenerPorIdAsync(
         Guid salidaId,
+        Guid usuarioId,
+        CancellationToken cancellationToken);
+
+    Task<IReadOnlyCollection<SalidaResumenDto>> ObtenerMiasAsync(
+        Guid usuarioId,
         CancellationToken cancellationToken);
 }

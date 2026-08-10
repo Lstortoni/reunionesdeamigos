@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "LaAAWZmVuYI=",
+  "dgSpecHash": "TdjoHAl8snU=",
   "success": true,
-  "projectFilePath": "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\api\\src\\ReunionesDeAmigos.Application\\ReunionesDeAmigos.Application.csproj",
+  "projectFilePath": "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\Api\\src\\ReunionesDeAmigos.Application\\ReunionesDeAmigos.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\dstortoni\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512"
   ],

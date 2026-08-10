@@ -100,6 +100,12 @@ public sealed class Salida
             fechaCreacion);
     }
 
+    public bool TieneParticipanteRegistrado(Guid usuarioId)
+    {
+        return _participantes.Any(
+            participante => participante.UsuarioId == usuarioId);
+    }
+
     public EstadoSalida ObtenerEstado(DateTimeOffset fechaActual)
     {
         if (FechaCancelacion.HasValue)

@@ -13,17 +13,19 @@ internal sealed class LugarRepository(AppDbContext dbContext)
         CancellationToken cancellationToken) =>
         dbContext.Lugares
             .AsNoTracking()
+            .Include(x => x.Ciudad)
             .SingleOrDefaultAsync(x => x.Id == lugarId, cancellationToken);
 
     public async Task<IReadOnlyCollection<Lugar>> BuscarAsync(
         string? texto,
         TipoLugar? tipo,
         string? barrio,
-        string? ciudad,
+        Guid? ciudadId,
         CancellationToken cancellationToken)
     {
         var consulta = dbContext.Lugares
             .AsNoTracking()
+            .Include(x => x.Ciudad)
             .Where(x => x.Activo);
 
         if (!string.IsNullOrWhiteSpace(texto))
@@ -46,11 +48,9 @@ internal sealed class LugarRepository(AppDbContext dbContext)
                 x.Barrio != null && EF.Functions.ILike(x.Barrio, barrioNormalizado));
         }
 
-        if (!string.IsNullOrWhiteSpace(ciudad))
+        if (ciudadId.HasValue)
         {
-            var ciudadNormalizada = ciudad.Trim();
-            consulta = consulta.Where(x =>
-                EF.Functions.ILike(x.Ciudad, ciudadNormalizada));
+            consulta = consulta.Where(x => x.CiudadId == ciudadId.Value);
         }
 
         return await consulta

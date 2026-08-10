@@ -22,6 +22,37 @@ namespace ReunionesDeAmigos.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ReunionesDeAmigos.Domain.Entities.Ciudad", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Pais")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Provincia")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Pais", "Provincia", "Nombre")
+                        .IsUnique();
+
+                    b.ToTable("ciudades", (string)null);
+                });
+
             modelBuilder.Entity("ReunionesDeAmigos.Domain.Entities.Lugar", b =>
                 {
                     b.Property<Guid>("Id")
@@ -34,10 +65,8 @@ namespace ReunionesDeAmigos.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("Ciudad")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<Guid>("CiudadId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(1000)
@@ -66,7 +95,7 @@ namespace ReunionesDeAmigos.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Ciudad", "Tipo", "Activo");
+                    b.HasIndex("CiudadId", "Tipo", "Activo");
 
                     b.ToTable("lugares", null, t =>
                         {
@@ -274,6 +303,17 @@ namespace ReunionesDeAmigos.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("votos", (string)null);
+                });
+
+            modelBuilder.Entity("ReunionesDeAmigos.Domain.Entities.Lugar", b =>
+                {
+                    b.HasOne("ReunionesDeAmigos.Domain.Entities.Ciudad", "Ciudad")
+                        .WithMany()
+                        .HasForeignKey("CiudadId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Ciudad");
                 });
 
             modelBuilder.Entity("ReunionesDeAmigos.Domain.Entities.ParticipanteSalida", b =>

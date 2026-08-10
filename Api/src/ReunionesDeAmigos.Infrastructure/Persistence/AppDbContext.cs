@@ -10,6 +10,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Salida> Salidas => Set<Salida>();
     public DbSet<ParticipanteSalida> ParticipantesSalida => Set<ParticipanteSalida>();
     public DbSet<Lugar> Lugares => Set<Lugar>();
+    public DbSet<Ciudad> Ciudades => Set<Ciudad>();
     public DbSet<Propuesta> Propuestas => Set<Propuesta>();
     public DbSet<Voto> Votos => Set<Voto>();
 

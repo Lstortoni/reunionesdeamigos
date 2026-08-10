@@ -12,6 +12,10 @@ public interface ISalidaRepository
         string codigoAcceso,
         CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<Salida>> ObtenerPorUsuarioAsync(
+        Guid usuarioId,
+        CancellationToken cancellationToken);
+
     Task<bool> ExisteCodigoAsync(
         string codigoAcceso,
         CancellationToken cancellationToken);
