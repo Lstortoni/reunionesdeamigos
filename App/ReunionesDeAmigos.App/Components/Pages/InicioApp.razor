@@ -1,0 +1,78 @@
+@page "/"
+@inject IAuthApiService AuthApiService
+@inject ISessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Reuniones de Amigos</PageTitle>
+
+<section class="welcome-page">
+    <div class="welcome-card">
+        <p class="eyebrow">Reuniones de Amigos</p>
+        <h1>Comprobando sesión...</h1>
+
+        @if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <p class="auth-error" role="alert">@_error</p>
+            <button class="btn btn-primary" @onclick="ComprobarSesionAsync">
+                Reintentar
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="IrAlLogin">
+                Ir al login
+            </button>
+        }
+    </div>
+</section>
+
+@code {
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ComprobarSesionAsync();
+    }
+
+    private async Task ComprobarSesionAsync()
+    {
+        _error = null;
+
+        try
+        {
+            var token = await SessionService.ObtenerAccessTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                IrAlLogin();
+                return;
+            }
+
+            var usuario = await AuthApiService.ObtenerUsuarioActualAsync(token);
+
+            if (usuario is null)
+            {
+                SessionService.Cerrar();
+                IrAlLogin();
+                return;
+            }
+
+            SessionService.EstablecerUsuario(usuario);
+            Navigation.NavigateTo("/inicio", replace: true);
+        }
+        catch (HttpRequestException)
+        {
+            _error = "No se pudo conectar con la API para comprobar la sesión.";
+        }
+        catch (ApiException exception)
+        {
+            _error = exception.Message;
+        }
+        catch (Exception)
+        {
+            _error = "Ocurrió un error al comprobar la sesión.";
+        }
+    }
+
+    private void IrAlLogin()
+    {
+        Navigation.NavigateTo("/login", replace: true);
+    }
+}

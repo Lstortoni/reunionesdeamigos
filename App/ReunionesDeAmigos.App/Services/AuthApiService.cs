@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using ReunionesDeAmigos.App.Models.Api;
 using ReunionesDeAmigos.App.Models.Auth;
@@ -29,5 +31,35 @@ public sealed class AuthApiService(HttpClient httpClient) : IAuthApiService
                    cancellationToken: cancellationToken)
                ?? throw new ApiException(
                    "La API devolvió una respuesta vacía.");
+    }
+    public async Task<UsuarioDto?> ObtenerUsuarioActualAsync(
+        string accessToken,
+        CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            "api/usuarios/me");
+        request.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            accessToken);
+
+        using var response = await httpClient.SendAsync(
+            request,
+            cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            return null;
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new ApiException("No se pudo comprobar la sesion.");
+        }
+
+        return await response.Content.ReadFromJsonAsync<UsuarioDto>(
+                   cancellationToken: cancellationToken)
+               ?? throw new ApiException(
+                   "La API devolvio una respuesta vacia.");
     }
 }

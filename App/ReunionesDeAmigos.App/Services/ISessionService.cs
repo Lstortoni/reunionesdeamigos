@@ -10,5 +10,7 @@ public interface ISessionService
 
     Task<string?> ObtenerAccessTokenAsync();
 
+    void EstablecerUsuario(UsuarioDto usuario);
+
     void Cerrar();
 }

@@ -124,3 +124,88 @@ body {
     margin: 1rem 0 1.5rem;
     color: #6d645b;
 }
+
+.home-page {
+    min-height: 100vh;
+    padding: 1.5rem;
+    background: linear-gradient(180deg, #f8f4ec 0%, #f1e9dd 100%);
+}
+
+.home-header,
+.section-heading,
+.outing-card-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.home-header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.create-outing-button {
+    width: 100%;
+    min-height: 52px;
+    margin: 1.5rem 0;
+    border: 0;
+    border-radius: 14px;
+    background: #d66f3c;
+    font-weight: 700;
+}
+
+.outings-section h2,
+.outing-card h3,
+.state-card h3 {
+    margin: 0;
+}
+
+.refresh-button {
+    border: 0;
+    background: transparent;
+    color: #9a4f2b;
+    font-weight: 700;
+}
+
+.outings-list {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.outing-card,
+.state-card {
+    padding: 1.25rem;
+    border: 1px solid rgba(92, 70, 48, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 30px rgba(69, 52, 35, 0.08);
+}
+
+.outing-card h3 {
+    margin-top: 0.9rem;
+}
+
+.outing-card p {
+    margin: 0.45rem 0;
+    color: #6d645b;
+}
+
+.outing-card small,
+.owner-label {
+    color: #766d64;
+}
+
+.status-pill {
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    background: #f7dfd2;
+    color: #8a4324;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.error-state {
+    color: #a83d2d;
+}

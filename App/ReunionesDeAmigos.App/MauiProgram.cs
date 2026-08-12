@@ -30,6 +30,7 @@ public static class MauiProgram
 		});
 		builder.Services.AddSingleton<IAuthApiService, AuthApiService>();
 		builder.Services.AddSingleton<ISessionService, SessionService>();
+		builder.Services.AddSingleton<ISalidasApiService, SalidasApiService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

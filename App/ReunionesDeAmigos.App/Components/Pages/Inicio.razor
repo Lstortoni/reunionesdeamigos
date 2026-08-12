@@ -1,26 +1,134 @@
 @page "/inicio"
 @inject ISessionService SessionService
+@inject ISalidasApiService SalidasApiService
 @inject NavigationManager Navigation
 
-<PageTitle>Inicio</PageTitle>
+<PageTitle>Mis salidas</PageTitle>
 
-<section class="welcome-page">
-    <div class="welcome-card">
-        <p class="eyebrow">Sesión iniciada</p>
-        <h1>Hola, @(SessionService.UsuarioActual?.Nombre ?? "amigo")</h1>
-        <p>
-            La app se conectó con la API y guardó tu token de forma segura.
-        </p>
+<main class="home-page">
+    <header class="home-header">
+        <div>
+            <p class="eyebrow">Reuniones de Amigos</p>
+            <h1>Hola, @(SessionService.UsuarioActual?.Nombre ?? "amigo")</h1>
+        </div>
         <button class="btn btn-outline-secondary" @onclick="CerrarSesion">
-            Cerrar sesión
+            Salir
         </button>
-    </div>
-</section>
+    </header>
+
+    <button class="btn btn-primary create-outing-button" disabled>
+        + Crear salida
+    </button>
+
+    <section class="outings-section">
+        <div class="section-heading">
+            <h2>Mis salidas</h2>
+            <button class="refresh-button"
+                    disabled="@_cargando"
+                    @onclick="CargarSalidasAsync">
+                Actualizar
+            </button>
+        </div>
+
+        @if (_cargando)
+        {
+            <div class="state-card">Cargando tus salidas...</div>
+        }
+        else if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <div class="state-card error-state">
+                <p>@_error</p>
+                <button class="btn btn-outline-secondary"
+                        @onclick="CargarSalidasAsync">
+                    Reintentar
+                </button>
+            </div>
+        }
+        else if (_salidas.Count == 0)
+        {
+            <div class="state-card">
+                <h3>Todavía no tenés salidas</h3>
+                <p>Cuando crees una o te unas, aparecerá acá.</p>
+            </div>
+        }
+        else
+        {
+            <div class="outings-list">
+                @foreach (var salida in _salidas)
+                {
+                    <article class="outing-card">
+                        <div class="outing-card-topline">
+                            <span class="status-pill">@ObtenerEstado(salida.Estado)</span>
+                            @if (salida.EsCreador)
+                            {
+                                <span class="owner-label">Organizás vos</span>
+                            }
+                        </div>
+                        <h3>@salida.Nombre</h3>
+                        <p>@salida.FechaEncuentro.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")</p>
+                        <small>@salida.CantidadParticipantes participante(s)</small>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+</main>
 
 @code {
+    private IReadOnlyCollection<SalidaResumenDto> _salidas = [];
+    private bool _cargando = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarSalidasAsync();
+    }
+
+    private async Task CargarSalidasAsync()
+    {
+        _cargando = true;
+        _error = null;
+
+        try
+        {
+            _salidas = await SalidasApiService.ObtenerMiasAsync();
+        }
+        catch (SesionVencidaException)
+        {
+            SessionService.Cerrar();
+            Navigation.NavigateTo("/login", replace: true);
+        }
+        catch (HttpRequestException)
+        {
+            _error = "No se pudo conectar con la API.";
+        }
+        catch (ApiException exception)
+        {
+            _error = exception.Message;
+        }
+        catch (Exception)
+        {
+            _error = "Ocurrió un error al cargar tus salidas.";
+        }
+        finally
+        {
+            _cargando = false;
+        }
+    }
+
+    private static string ObtenerEstado(EstadoSalida estado) => estado switch
+    {
+        EstadoSalida.RecibiendoPropuestas => "Propuestas",
+        EstadoSalida.VotacionAbierta => "Votación abierta",
+        EstadoSalida.Confirmada => "Confirmada",
+        EstadoSalida.Cancelada => "Cancelada",
+        EstadoSalida.Finalizada => "Finalizada",
+        _ => "Sin estado"
+    };
+
     private void CerrarSesion()
     {
         SessionService.Cerrar();
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/login", replace: true);
     }
 }

@@ -22,6 +22,12 @@ public sealed class SessionService : ISessionService
     public Task<string?> ObtenerAccessTokenAsync() =>
         SecureStorage.Default.GetAsync(AccessTokenKey);
 
+    public void EstablecerUsuario(UsuarioDto usuario)
+    {
+        ArgumentNullException.ThrowIfNull(usuario);
+        UsuarioActual = usuario;
+    }
+
     public void Cerrar()
     {
         SecureStorage.Default.Remove(AccessTokenKey);
