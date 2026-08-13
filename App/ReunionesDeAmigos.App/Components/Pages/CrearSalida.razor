@@ -1,0 +1,210 @@
+@page "/salidas/crear"
+@inject ISalidasApiService SalidasApiService
+@inject ISessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Crear salida</PageTitle>
+
+<main class="home-page">
+    <header class="page-header">
+        <button class="back-button" @onclick="VolverAlInicio" aria-label="Volver al inicio">‹</button>
+        <div>
+            <p class="eyebrow">Reuniones de Amigos</p>
+            <h1>Crear salida</h1>
+        </div>
+    </header>
+
+    @if (_salidaCreada is not null)
+    {
+        <section class="creation-success">
+            <p class="eyebrow">Salida creada</p>
+            <h2>@_salidaCreada.Nombre</h2>
+            <p>@_salidaCreada.FechaEncuentro.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")</p>
+            <div class="access-code">
+                <small>Código de acceso</small>
+                <strong>@_salidaCreada.CodigoAcceso</strong>
+            </div>
+            <button class="btn btn-primary places-search-button" @onclick="IrAMisSalidas">
+                Ver mis salidas
+            </button>
+            <button class="btn btn-outline-secondary secondary-action" @onclick="VolverAlInicio">
+                Volver al inicio
+            </button>
+        </section>
+    }
+    else
+    {
+        <section class="creation-form">
+            <div class="form-field">
+                <label for="nombre">Nombre de la salida</label>
+                <input id="nombre" class="form-control" maxlength="150"
+                       placeholder="Ejemplo: Cena del sábado" @bind="_nombre" />
+            </div>
+
+            <div class="form-field">
+                <label for="descripcion">Descripción (opcional)</label>
+                <textarea id="descripcion" class="form-control" maxlength="1000"
+                          rows="3" @bind="_descripcion"></textarea>
+            </div>
+
+            <div class="form-field">
+                <label for="fecha">Fecha y hora del encuentro</label>
+                <input id="fecha" type="datetime-local" class="form-control"
+                       @bind="_fechaEncuentro"
+                       @bind:format="yyyy-MM-ddTHH:mm" />
+            </div>
+
+            <details class="voting-options">
+                <summary>Configuración de propuestas y votación</summary>
+                <p>Si dejás un campo vacío usaremos 3 días para propuestas y 2 días para votar.</p>
+
+                <div class="form-field">
+                    <label for="diasPropuestas">Días para proponer lugares (opcional)</label>
+                    <input id="diasPropuestas" type="number" min="1" class="form-control"
+                           placeholder="Predeterminado: 3" @bind="_diasParaPropuestas" />
+                </div>
+
+                <div class="form-field">
+                    <label for="diasVotar">Días para votar (opcional)</label>
+                    <input id="diasVotar" type="number" min="1" class="form-control"
+                           placeholder="Predeterminado: 2" @bind="_diasParaVotar" />
+                </div>
+            </details>
+
+            <section class="initial-proposals">
+                <h2>Tres propuestas iniciales</h2>
+                <p>Por ahora ingresamos opciones manuales. Más adelante podrás elegirlas del catálogo.</p>
+
+                @for (var indice = 0; indice < _propuestas.Length; indice++)
+                {
+                    var numero = indice + 1;
+                    var indiceActual = indice;
+                    <div class="proposal-input">
+                        <label for="propuesta-@numero">Propuesta @numero</label>
+                        <input id="propuesta-@numero" class="form-control" maxlength="150"
+                               placeholder="Nombre de la opción"
+                               value="@_propuestas[indiceActual]"
+                               @oninput="evento => _propuestas[indiceActual] = evento.Value?.ToString() ?? string.Empty" />
+                    </div>
+                }
+            </section>
+
+            <p class="defaults-notice">
+                Se usarán <strong>@DiasPropuestasEfectivos días</strong> para propuestas y
+                <strong>@DiasVotacionEfectivos días</strong> para votar.
+            </p>
+
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <div class="auth-error" role="alert">@_error</div>
+            }
+
+            <button class="btn btn-primary places-search-button"
+                    disabled="@_creando" @onclick="CrearAsync">
+                @(_creando ? "Creando..." : "Crear salida")
+            </button>
+        </section>
+    }
+</main>
+
+@code {
+    private const int DiasPropuestasDefault = 3;
+    private const int DiasVotacionDefault = 2;
+
+    private string _nombre = string.Empty;
+    private string _descripcion = string.Empty;
+    private DateTime _fechaEncuentro = DateTime.Now.AddDays(7);
+    private int? _diasParaPropuestas;
+    private int? _diasParaVotar;
+    private readonly string[] _propuestas = [string.Empty, string.Empty, string.Empty];
+    private bool _creando;
+    private string? _error;
+    private SalidaCreadaDto? _salidaCreada;
+
+    private int DiasPropuestasEfectivos => _diasParaPropuestas ?? DiasPropuestasDefault;
+    private int DiasVotacionEfectivos => _diasParaVotar ?? DiasVotacionDefault;
+
+    private async Task CrearAsync()
+    {
+        _error = ValidarFormulario();
+        if (_error is not null)
+        {
+            return;
+        }
+
+        _creando = true;
+
+        try
+        {
+            var request = new CrearSalidaRequest(
+                _nombre.Trim(),
+                string.IsNullOrWhiteSpace(_descripcion) ? null : _descripcion.Trim(),
+                new DateTimeOffset(_fechaEncuentro),
+                DiasPropuestasEfectivos,
+                DiasVotacionEfectivos,
+                _propuestas.Select(nombre => new CrearPropuestaInicialRequest(
+                    TipoPropuesta.Manual,
+                    null,
+                    nombre.Trim(),
+                    null,
+                    null)).ToArray());
+
+            _salidaCreada = await SalidasApiService.CrearAsync(request);
+        }
+        catch (SesionVencidaException)
+        {
+            SessionService.Cerrar();
+            Navigation.NavigateTo("/login", replace: true);
+        }
+        catch (HttpRequestException)
+        {
+            _error = "No se pudo conectar con la API.";
+        }
+        catch (ApiException exception)
+        {
+            _error = exception.Message;
+        }
+        catch (Exception)
+        {
+            _error = "Ocurrió un error al crear la salida.";
+        }
+        finally
+        {
+            _creando = false;
+        }
+    }
+
+    private string? ValidarFormulario()
+    {
+        if (string.IsNullOrWhiteSpace(_nombre))
+        {
+            return "Ingresá un nombre para la salida.";
+        }
+
+        if (DiasPropuestasEfectivos <= 0 || DiasVotacionEfectivos <= 0)
+        {
+            return "Los períodos deben ser mayores que cero.";
+        }
+
+        if (_fechaEncuentro <= DateTime.Now.AddDays(DiasPropuestasEfectivos + DiasVotacionEfectivos))
+        {
+            return "El encuentro debe ser posterior al período completo de propuestas y votación.";
+        }
+
+        if (_propuestas.Any(string.IsNullOrWhiteSpace))
+        {
+            return "Completá las tres propuestas iniciales.";
+        }
+
+        if (_propuestas.Select(x => x.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Count() != 3)
+        {
+            return "Las tres propuestas deben tener nombres diferentes.";
+        }
+
+        return null;
+    }
+
+    private void VolverAlInicio() => Navigation.NavigateTo("/inicio");
+
+    private void IrAMisSalidas() => Navigation.NavigateTo("/salidas/mias");
+}

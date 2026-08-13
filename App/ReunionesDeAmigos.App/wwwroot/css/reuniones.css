@@ -145,6 +145,112 @@ body {
     font-size: 2rem;
 }
 
+.home-subtitle,
+.section-description {
+    margin: 0.55rem 0 0;
+    color: #6d645b;
+}
+
+.home-actions {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.home-action-card {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid rgba(92, 70, 48, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #27231f;
+    text-align: left;
+    box-shadow: 0 12px 30px rgba(69, 52, 35, 0.08);
+}
+
+.home-action-card:not(:disabled):active {
+    transform: scale(0.99);
+}
+
+.home-action-card:disabled {
+    opacity: 0.72;
+}
+
+.home-action-primary {
+    border-color: rgba(214, 111, 60, 0.3);
+    background: #fff7f2;
+}
+
+.home-action-icon {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: #f7dfd2;
+    font-size: 1.5rem;
+}
+
+.home-action-content {
+    flex: 1;
+    display: grid;
+    gap: 0.3rem;
+}
+
+.home-action-content strong {
+    font-size: 1.08rem;
+}
+
+.home-action-content small {
+    color: #6d645b;
+}
+
+.home-action-arrow {
+    color: #9a4f2b;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.coming-soon {
+    width: fit-content;
+    margin-top: 0.2rem;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    background: #eee7df;
+    color: #766d64;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.back-button {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border: 1px solid #d9cfc4;
+    border-radius: 50%;
+    background: white;
+    color: #9a4f2b;
+    font-size: 2rem;
+    line-height: 1;
+}
+
 .create-outing-button {
     width: 100%;
     min-height: 52px;
@@ -208,4 +314,135 @@ body {
 
 .error-state {
     color: #a83d2d;
+}
+
+.places-filters {
+    padding: 1.25rem;
+    border: 1px solid rgba(92, 70, 48, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 30px rgba(69, 52, 35, 0.08);
+}
+
+.places-search-button {
+    width: 100%;
+    min-height: 48px;
+    border: 0;
+    border-radius: 12px;
+    background: #d66f3c;
+    font-weight: 700;
+}
+
+.places-results {
+    margin-top: 1.5rem;
+}
+
+.results-count {
+    margin: 0 0 0.75rem;
+    color: #6d645b;
+    font-size: 0.9rem;
+}
+
+.places-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.place-card {
+    padding: 1.25rem;
+    border: 1px solid rgba(92, 70, 48, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 30px rgba(69, 52, 35, 0.08);
+}
+
+.place-card h3 {
+    margin: 0.9rem 0 0.35rem;
+}
+
+.place-card p {
+    margin: 0.35rem 0;
+    color: #6d645b;
+}
+
+.place-card small {
+    color: #766d64;
+}
+
+.place-description {
+    padding-top: 0.65rem;
+    border-top: 1px solid #eee7df;
+}
+
+.creation-form,
+.creation-success {
+    padding: 1.25rem;
+    border: 1px solid rgba(92, 70, 48, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 30px rgba(69, 52, 35, 0.08);
+}
+
+.voting-options {
+    margin: 1.25rem 0;
+    padding: 1rem;
+    border-radius: 14px;
+    background: #f8f3ec;
+}
+
+.voting-options summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.voting-options > p,
+.initial-proposals > p,
+.defaults-notice {
+    color: #6d645b;
+}
+
+.initial-proposals {
+    margin-top: 1.5rem;
+}
+
+.initial-proposals h2,
+.creation-success h2 {
+    margin: 0;
+}
+
+.proposal-input {
+    margin-top: 1rem;
+}
+
+.proposal-input label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-weight: 650;
+}
+
+.defaults-notice {
+    margin: 1.25rem 0;
+    padding: 0.85rem;
+    border-radius: 12px;
+    background: #fff7f2;
+}
+
+.access-code {
+    display: grid;
+    gap: 0.25rem;
+    margin: 1.25rem 0;
+    padding: 1rem;
+    border-radius: 14px;
+    background: #f7dfd2;
+}
+
+.access-code strong {
+    color: #8a4324;
+    font-size: 1.35rem;
+    letter-spacing: 0.06em;
+}
+
+.secondary-action {
+    width: 100%;
+    margin-top: 0.75rem;
 }

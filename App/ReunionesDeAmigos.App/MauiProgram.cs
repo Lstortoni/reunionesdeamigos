@@ -31,6 +31,8 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IAuthApiService, AuthApiService>();
 		builder.Services.AddSingleton<ISessionService, SessionService>();
 		builder.Services.AddSingleton<ISalidasApiService, SalidasApiService>();
+		builder.Services.AddSingleton<ICiudadesApiService, CiudadesApiService>();
+		builder.Services.AddSingleton<ILugaresApiService, LugaresApiService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
