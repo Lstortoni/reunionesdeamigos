@@ -22,5 +22,32 @@ services:
       retries: 10
     restart: unless-stopped
 
+  api:
+    build:
+      context: .
+      dockerfile: Api/src/ReunionesDeAmigos.Api/Dockerfile
+    image: reuniones-api:latest
+    container_name: reuniones-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=reuniones_de_amigos;Username=reuniones;Password=cambiar_password_local"
+      Jwt__Issuer: "ReunionesDeAmigos.Api"
+      Jwt__Audience: "ReunionesDeAmigos.App"
+      Jwt__SigningKey: "cambiar_clave_jwt_local"
+      Jwt__ExpirationMinutes: "60"
+      GooglePlaces__BaseUrl: "https://places.googleapis.com/"
+      GooglePlaces__ApiKey: "configurar_clave_google_places_local"
+      GooglePlaces__DefaultLanguageCode: "es"
+      GooglePlaces__DefaultRegionCode: "AR"
+      GooglePlaces__DefaultPageSize: "20"
+      GooglePlaces__TimeoutSeconds: "10"
+    ports:
+      - "5080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   reuniones_postgres_data:
