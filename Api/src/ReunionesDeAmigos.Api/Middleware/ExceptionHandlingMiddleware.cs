@@ -51,6 +51,10 @@ public sealed class ExceptionHandlingMiddleware(
                 StatusCodes.Status401Unauthorized,
                 "Credenciales inválidas",
                 exception.Message),
+            ExternalServiceException => (
+                StatusCodes.Status502BadGateway,
+                "Servicio externo no disponible",
+                exception.Message),
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "Error interno",

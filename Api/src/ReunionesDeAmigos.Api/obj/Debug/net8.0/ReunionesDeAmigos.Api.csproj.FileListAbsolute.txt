@@ -157,3 +157,10 @@ C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmig
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.Extensions.Http.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+C:\Carpeta Proyectos Personales\GitHub\reunionesdeamigos\Api\src\ReunionesDeAmigos.Api\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll

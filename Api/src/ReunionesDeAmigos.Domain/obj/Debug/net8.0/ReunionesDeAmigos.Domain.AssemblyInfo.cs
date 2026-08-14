@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReunionesDeAmigos.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b135a67994e11211a80fe409fb167b78e029898d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d22cb5080ac09460e4465d08162279a7dc44c056")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReunionesDeAmigos.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReunionesDeAmigos.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ReunionesDeAmigos.Application.Interfaces.Repositories;
+using ReunionesDeAmigos.Application.Interfaces.ExternalServices;
 using ReunionesDeAmigos.Application.Interfaces.Services;
+using ReunionesDeAmigos.Infrastructure.ExternalServices.GooglePlaces;
 using ReunionesDeAmigos.Infrastructure.Persistence;
 using ReunionesDeAmigos.Infrastructure.Persistence.Repositories;
 using ReunionesDeAmigos.Infrastructure.Security;
@@ -22,6 +24,47 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
+
+        services.Configure<GooglePlacesOptions>(options =>
+        {
+            options.BaseUrl = configuration["GooglePlaces:BaseUrl"]
+                ?? string.Empty;
+            options.ApiKey = configuration["GooglePlaces:ApiKey"]
+                ?? string.Empty;
+            options.DefaultLanguageCode =
+                configuration["GooglePlaces:DefaultLanguageCode"]
+                ?? string.Empty;
+            options.DefaultRegionCode =
+                configuration["GooglePlaces:DefaultRegionCode"]
+                ?? string.Empty;
+            _ = int.TryParse(
+                configuration["GooglePlaces:DefaultPageSize"],
+                out var defaultPageSize);
+            options.DefaultPageSize = defaultPageSize;
+            _ = int.TryParse(
+                configuration["GooglePlaces:TimeoutSeconds"],
+                out var timeoutSeconds);
+            options.TimeoutSeconds = timeoutSeconds;
+        });
+        var googlePlacesBaseUrl =
+            configuration["GooglePlaces:BaseUrl"]
+            ?? throw new InvalidOperationException(
+                "No se configuró GooglePlaces:BaseUrl.");
+        var googlePlacesTimeout = int.TryParse(
+            configuration["GooglePlaces:TimeoutSeconds"],
+            out var configuredTimeout)
+            ? configuredTimeout
+            : throw new InvalidOperationException(
+                "GooglePlaces:TimeoutSeconds no es válido.");
+        _ = configuration["GooglePlaces:ApiKey"]
+            ?? throw new InvalidOperationException(
+                "No se configuró GooglePlaces:ApiKey.");
+        services.AddHttpClient<IProveedorLugaresExternos, GooglePlacesClient>(
+            client =>
+            {
+                client.BaseAddress = new Uri(googlePlacesBaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(googlePlacesTimeout);
+            });
 
         services.AddScoped<ISalidaRepository, SalidaRepository>();
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
