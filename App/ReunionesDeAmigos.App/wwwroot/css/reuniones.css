@@ -356,6 +356,18 @@ body {
     box-shadow: 0 12px 30px rgba(69, 52, 35, 0.08);
 }
 
+.place-card-button {
+    width: 100%;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.place-card-button:focus {
+    outline: 3px solid rgba(214, 111, 60, 0.22);
+}
+
 .place-card h3 {
     margin: 0.9rem 0 0.35rem;
 }
@@ -367,6 +379,70 @@ body {
 
 .place-card small {
     color: #766d64;
+}
+
+.place-maps-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: #b4512f;
+    font-weight: 700;
+}
+
+.place-detail-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: #b4512f;
+    font-weight: 700;
+}
+
+.place-detail-card {
+    padding: 1.5rem;
+    border: 1px solid rgba(92, 70, 48, 0.12);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 30px rgba(69, 52, 35, 0.08);
+}
+
+.place-detail-card h2 {
+    margin: 1rem 0 0.5rem;
+}
+
+.place-detail-address {
+    color: #6d645b;
+}
+
+.place-detail-section {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee7df;
+}
+
+.place-detail-section h3 {
+    margin: 0 0 0.55rem;
+    font-size: 1rem;
+}
+
+.place-detail-section p {
+    margin: 0;
+}
+
+.place-hours {
+    margin: 0;
+    padding-left: 1.15rem;
+    color: #6d645b;
+}
+
+.place-detail-actions {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.places-attribution {
+    margin: 1rem 0 0;
+    color: #766d64;
+    font-size: 0.78rem;
+    text-align: center;
 }
 
 .place-description {
@@ -445,4 +521,86 @@ body {
 .secondary-action {
     width: 100%;
     margin-top: 0.75rem;
+}
+
+.creation-step {
+    margin: 0 0 0.8rem;
+    color: #8a4324;
+    font-size: 0.85rem;
+    font-weight: 750;
+}
+
+.creation-date-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr);
+    gap: 0.75rem;
+}
+
+.creation-summary {
+    display: grid;
+    gap: 0.2rem;
+    margin-bottom: 1.25rem;
+    padding: 0.9rem;
+    border-radius: 12px;
+    background: #f8f3ec;
+}
+
+.creation-summary span,
+.selected-proposals-header p,
+.selected-proposal-card p {
+    margin: 0;
+    color: #6d645b;
+}
+
+.selected-proposals-header h2 {
+    margin: 0;
+}
+
+.selected-proposals {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.selected-proposal-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid #eee1d6;
+    border-radius: 14px;
+    background: #fffaf6;
+}
+
+.selected-proposal-card h3 {
+    margin: 0.55rem 0 0.2rem;
+    font-size: 1rem;
+}
+
+.remove-proposal {
+    border: 0;
+    background: transparent;
+    color: #a83d2d;
+    font-weight: 700;
+}
+
+.proposal-actions {
+    display: grid;
+    gap: 0.25rem;
+    margin: 1.25rem 0;
+}
+
+.create-outing-button,
+.select-place-button {
+    width: 100%;
+    min-height: 46px;
+    border: 0;
+    border-radius: 12px;
+    background: #d66f3c;
+    font-weight: 700;
+}
+
+.select-place-button {
+    margin-top: 0.9rem;
 }

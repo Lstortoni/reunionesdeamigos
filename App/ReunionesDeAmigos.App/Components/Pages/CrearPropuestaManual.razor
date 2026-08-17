@@ -1,0 +1,23 @@
+@page "/salidas/crear/manual"
+@inject CrearSalidaDraftService Draft
+@inject NavigationManager Navigation
+
+<PageTitle>Opción manual</PageTitle>
+<main class="home-page">
+    <header class="page-header"><button class="back-button" @onclick="Volver" aria-label="Volver">‹</button>
+        <div><p class="eyebrow">Nueva propuesta</p><h1>Opción manual</h1></div></header>
+    <section class="creation-form">
+        <div class="form-field"><label for="nombreManual">Nombre</label><input id="nombreManual" class="form-control" maxlength="150" placeholder="Ejemplo: Asado en casa" @bind="_nombre" /></div>
+        <div class="form-field"><label for="descripcionManual">Descripción (opcional)</label><textarea id="descripcionManual" class="form-control" maxlength="1000" rows="3" @bind="_descripcion"></textarea></div>
+        <div class="form-field"><label for="direccionManual">Dirección (opcional)</label><input id="direccionManual" class="form-control" maxlength="250" placeholder="Ejemplo: Calle 50 y 10" @bind="_direccion" /></div>
+        @if (_error is not null) { <div class="auth-error" role="alert">@_error</div> }
+        <button class="btn btn-primary places-search-button" @onclick="Guardar">Agregar opción</button>
+    </section>
+</main>
+@code {
+    private string _nombre = string.Empty, _descripcion = string.Empty, _direccion = string.Empty;
+    private string? _error;
+    protected override void OnInitialized() { if (string.IsNullOrWhiteSpace(Draft.Nombre) || Draft.EstaCompleto) Volver(); }
+    private void Guardar() { _error = Draft.AgregarManual(_nombre, _descripcion, _direccion); if (_error is null) Volver(); }
+    private void Volver() => Navigation.NavigateTo("/salidas/crear/opciones");
+}

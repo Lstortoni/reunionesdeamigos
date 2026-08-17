@@ -6,7 +6,7 @@ public sealed record PropuestaDto(
     Guid Id,
     Guid ParticipanteSalidaId,
     TipoPropuesta Tipo,
-    Guid? LugarId,
+    string? GooglePlaceId,
     string? NombreManual,
     string? DescripcionManual,
     string? DireccionManual,

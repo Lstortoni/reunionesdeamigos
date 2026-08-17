@@ -13,6 +13,25 @@ public sealed class LugaresExternosController(
     ILugarExternoService lugarExternoService)
     : ControllerBase
 {
+    [HttpGet("{googlePlaceId}")]
+    [ProducesResponseType<LugarExternoDetalleDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    public async Task<ActionResult<LugarExternoDetalleDto>> ObtenerDetalleAsync(
+        string googlePlaceId,
+        [FromQuery] string? idioma,
+        CancellationToken cancellationToken)
+    {
+        var lugar = await lugarExternoService.ObtenerDetalleAsync(
+            googlePlaceId,
+            idioma,
+            cancellationToken);
+
+        return Ok(lugar);
+    }
+
     [HttpGet]
     [ProducesResponseType<IReadOnlyCollection<LugarExternoDto>>(
         StatusCodes.Status200OK)]

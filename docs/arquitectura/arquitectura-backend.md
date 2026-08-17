@@ -223,8 +223,9 @@ await _unitOfWork.SaveChangesAsync(...);
 No necesitamos inicialmente un `IVotoRepository` para agregar el voto
 directamente.
 
-`Lugar` sí tiene repositorio porque existe como catálogo independiente y puede
-consultarse sin crear una salida.
+`Lugar` conserva su repositorio por el catálogo local construido inicialmente,
+pero las propuestas nuevas ya no dependen de `LugarId`. Los lugares externos se
+identifican mediante `GooglePlaceId` y se consultan a Google Places.
 
 ## Infrastructure
 
@@ -659,7 +660,8 @@ GET /api/salidas/{salidaId}
 
 Al crear, `SalidasController` obtiene el creador desde el claim `sub`; el body no
 acepta un identificador de usuario. La solicitud contiene exactamente tres
-propuestas iniciales, que pueden ser de catálogo o manuales. `SalidaService`
+propuestas iniciales, que pueden ser externas o manuales. Una propuesta externa
+guarda `GooglePlaceId`; no crea automáticamente un registro en `Lugares`. `SalidaService`
 reutiliza los comportamientos existentes de `Salida` y guarda la salida, su
 participante creador y las propuestas en una sola operación. Al consultar,
 `SalidaService` verifica que

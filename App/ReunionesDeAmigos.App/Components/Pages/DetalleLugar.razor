@@ -1,0 +1,120 @@
+@page "/lugares/externos/{GooglePlaceId}"
+@inject ILugaresApiService LugaresApiService
+@inject ISessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Detalle del lugar</PageTitle>
+
+<main class="home-page">
+    <header class="page-header">
+        <button class="back-button" @onclick="Volver" aria-label="Volver a lugares">‹</button>
+        <div><p class="eyebrow">Reuniones de Amigos</p><h1>Detalle del lugar</h1></div>
+    </header>
+
+    @if (_cargando)
+    {
+        <div class="state-card">Cargando detalle...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="state-card error-state">
+            <p>@_error</p>
+            <button class="btn btn-outline-secondary" @onclick="CargarDetalleAsync">Reintentar</button>
+        </div>
+    }
+    else if (_lugar is not null)
+    {
+        <article class="place-detail-card">
+            <span class="status-pill">@FormatearTipoGoogle(_lugar.TipoGoogle)</span>
+            <h2>@_lugar.Nombre</h2>
+            @if (!string.IsNullOrWhiteSpace(_lugar.Direccion))
+            {
+                <p class="place-detail-address">@_lugar.Direccion</p>
+            }
+
+            @if (_lugar.Calificacion.HasValue)
+            {
+                <section class="place-detail-section">
+                    <h3>Calificación</h3>
+                    <p><strong>@_lugar.Calificacion.Value.ToString("0.0")</strong> de 5
+                        @if (_lugar.CantidadCalificaciones.HasValue)
+                        {
+                            <span> · @_lugar.CantidadCalificaciones.Value valoraciones</span>
+                        }
+                    </p>
+                </section>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_lugar.Telefono))
+            {
+                <section class="place-detail-section"><h3>Teléfono</h3><p>@_lugar.Telefono</p></section>
+            }
+
+            @if (_lugar.Horarios.Count > 0)
+            {
+                <section class="place-detail-section">
+                    <h3>Horarios</h3>
+                    <ul class="place-hours">
+                        @foreach (var horario in _lugar.Horarios)
+                        {
+                            <li>@horario</li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            <div class="place-detail-actions">
+                @if (!string.IsNullOrWhiteSpace(_lugar.GoogleMapsUri))
+                {
+                    <a class="btn btn-primary places-search-button" href="@_lugar.GoogleMapsUri"
+                       target="_blank" rel="noopener noreferrer">Abrir en Google Maps</a>
+                }
+                @if (!string.IsNullOrWhiteSpace(_lugar.SitioWebUri))
+                {
+                    <a class="btn btn-outline-secondary secondary-action" href="@_lugar.SitioWebUri"
+                       target="_blank" rel="noopener noreferrer">Visitar sitio web</a>
+                }
+            </div>
+        </article>
+        <p class="places-attribution">Información proporcionada por Google Maps</p>
+    }
+</main>
+
+@code {
+    [Parameter]
+    public string GooglePlaceId { get; set; } = string.Empty;
+
+    private LugarExternoDetalleDto? _lugar;
+    private bool _cargando = true;
+    private string? _error;
+
+    protected override async Task OnParametersSetAsync() => await CargarDetalleAsync();
+
+    private async Task CargarDetalleAsync()
+    {
+        _cargando = true;
+        _error = null;
+        try
+        {
+            _lugar = await LugaresApiService.ObtenerDetalleExternoAsync(GooglePlaceId, "es");
+        }
+        catch (SesionVencidaException)
+        {
+            SessionService.Cerrar();
+            Navigation.NavigateTo("/login", replace: true);
+        }
+        catch (HttpRequestException) { _error = "No se pudo conectar con la API."; }
+        catch (ApiException exception) { _error = exception.Message; }
+        catch (Exception) { _error = "Ocurrió un error al cargar el detalle del lugar."; }
+        finally { _cargando = false; }
+    }
+
+    private static string FormatearTipoGoogle(string? tipo)
+    {
+        if (string.IsNullOrWhiteSpace(tipo)) return "Lugar";
+        var texto = tipo.Replace('_', ' ');
+        return char.ToUpperInvariant(texto[0]) + texto[1..];
+    }
+
+    private void Volver() => Navigation.NavigateTo("/lugares");
+}

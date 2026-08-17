@@ -174,24 +174,27 @@ public sealed class Salida
         return participante;
     }
 
-    public Propuesta AgregarPropuestaDeCatalogo(
+    public Propuesta AgregarPropuestaExterna(
         Guid participanteSalidaId,
-        Lugar lugar,
+        string googlePlaceId,
         DateTimeOffset fechaCreacion)
     {
-        ArgumentNullException.ThrowIfNull(lugar);
         ValidarPropuestaPermitida(participanteSalidaId, fechaCreacion);
 
-        if (_propuestas.Any(propuesta => propuesta.LugarId == lugar.Id))
+        if (_propuestas.Any(propuesta =>
+                string.Equals(
+                    propuesta.GooglePlaceId,
+                    googlePlaceId?.Trim(),
+                    StringComparison.Ordinal)))
         {
             throw new DomainException(
                 "El lugar ya fue propuesto en esta salida.");
         }
 
-        var propuesta = Propuesta.CrearDeCatalogo(
+        var propuesta = Propuesta.CrearExterna(
             Id,
             participanteSalidaId,
-            lugar,
+            googlePlaceId,
             fechaCreacion);
 
         _propuestas.Add(propuesta);

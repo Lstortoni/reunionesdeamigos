@@ -4,10 +4,10 @@ namespace ReunionesDeAmigos.Application.Interfaces.Services;
 
 public interface IPropuestaService
 {
-    Task<PropuestaDto> AgregarDeCatalogoAsync(
+    Task<PropuestaDto> AgregarExternaAsync(
         Guid salidaId,
         Guid participanteSalidaId,
-        Guid lugarId,
+        AgregarPropuestaExternaRequest request,
         CancellationToken cancellationToken);
 
     Task<PropuestaDto> AgregarManualAsync(

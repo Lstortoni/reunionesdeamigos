@@ -1,0 +1,79 @@
+@page "/salidas/crear/opciones"
+@inject CrearSalidaDraftService Draft
+@inject ISalidasApiService SalidasApiService
+@inject ISessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Opciones de la salida</PageTitle>
+<main class="home-page">
+    <header class="page-header">
+        <button class="back-button" @onclick="VolverADatos" aria-label="Volver">‹</button>
+        <div><p class="eyebrow">Reuniones de Amigos</p><h1>Elegir opciones</h1></div>
+    </header>
+    @if (_salidaCreada is not null)
+    {
+        <section class="creation-success">
+            <p class="eyebrow">Salida creada</p><h2>@_salidaCreada.Nombre</h2>
+            <p>@_salidaCreada.FechaEncuentro.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")</p>
+            <div class="access-code"><small>Código de acceso</small><strong>@_salidaCreada.CodigoAcceso</strong></div>
+            <button class="btn btn-primary places-search-button" @onclick="IrAMisSalidas">Ver mis salidas</button>
+            <button class="btn btn-outline-secondary secondary-action" @onclick="IrAlInicio">Volver al inicio</button>
+        </section>
+    }
+    else
+    {
+        <p class="creation-step">Paso 2 de 2 · Propuestas iniciales</p>
+        <section class="creation-form">
+            <div class="creation-summary"><strong>@Draft.Nombre</strong><span>@Draft.Fecha.Add(Draft.Hora).ToString("dd/MM/yyyy · HH:mm")</span></div>
+            <div class="selected-proposals-header"><h2>Tres opciones iniciales</h2><p>Elegidas: @Draft.Propuestas.Count de 3</p></div>
+            @if (Draft.Propuestas.Count == 0)
+            { <div class="state-card"><p>Todavía no elegiste ninguna opción.</p></div> }
+            else
+            {
+                <div class="selected-proposals">
+                    @for (var indice = 0; indice < Draft.Propuestas.Count; indice++)
+                    {
+                        var propuesta = Draft.Propuestas[indice]; var indiceActual = indice;
+                        <article class="selected-proposal-card">
+                            <div><span class="status-pill">@(propuesta.Tipo == TipoPropuesta.Manual ? "Manual" : "Google")</span>
+                                <h3>@propuesta.NombreVisible</h3>
+                                @if (propuesta.DireccionVisible is not null) { <p>@propuesta.DireccionVisible</p> }
+                            </div>
+                            <button type="button" class="remove-proposal" @onclick="() => Draft.Quitar(indiceActual)">Quitar</button>
+                        </article>
+                    }
+                </div>
+            }
+            <div class="proposal-actions">
+                <button class="btn btn-primary places-search-button" disabled="@Draft.EstaCompleto" @onclick="BuscarLugar">Buscar un lugar</button>
+                <button class="btn btn-outline-secondary secondary-action" disabled="@Draft.EstaCompleto" @onclick="AgregarManual">Escribir una opción manual</button>
+            </div>
+            @if (_error is not null) { <div class="auth-error" role="alert">@_error</div> }
+            <button class="btn btn-primary create-outing-button" disabled="@(!Draft.EstaCompleto || _creando)" @onclick="CrearAsync">
+                @(_creando ? "Creando..." : "Crear salida")</button>
+        </section>
+    }
+</main>
+
+@code {
+    private bool _creando;
+    private string? _error;
+    private SalidaCreadaDto? _salidaCreada;
+    protected override void OnInitialized() { if (string.IsNullOrWhiteSpace(Draft.Nombre)) Navigation.NavigateTo("/salidas/crear", true); }
+    private void VolverADatos() => Navigation.NavigateTo("/salidas/crear");
+    private void IrAMisSalidas() => Navigation.NavigateTo("/salidas/mias");
+    private void IrAlInicio() => Navigation.NavigateTo("/inicio");
+    private void BuscarLugar() => Navigation.NavigateTo("/salidas/crear/lugar");
+    private void AgregarManual() => Navigation.NavigateTo("/salidas/crear/manual");
+    private async Task CrearAsync()
+    {
+        if (!Draft.EstaCompleto) return;
+        _creando = true; _error = null;
+        try { _salidaCreada = await SalidasApiService.CrearAsync(Draft.CrearRequest()); Draft.Limpiar(); }
+        catch (SesionVencidaException) { SessionService.Cerrar(); Navigation.NavigateTo("/login", true); }
+        catch (HttpRequestException) { _error = "No se pudo conectar con la API."; }
+        catch (ApiException ex) { _error = ex.Message; }
+        catch (Exception) { _error = "Ocurrió un error al crear la salida."; }
+        finally { _creando = false; }
+    }
+}

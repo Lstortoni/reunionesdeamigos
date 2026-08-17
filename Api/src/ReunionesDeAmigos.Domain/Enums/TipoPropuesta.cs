@@ -2,6 +2,6 @@ namespace ReunionesDeAmigos.Domain.Enums;
 
 public enum TipoPropuesta
 {
-    LugarCatalogo = 1,
+    LugarExterno = 1,
     Manual = 2
 }

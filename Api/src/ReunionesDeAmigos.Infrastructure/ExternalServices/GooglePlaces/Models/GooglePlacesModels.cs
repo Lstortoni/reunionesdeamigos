@@ -20,7 +20,12 @@ internal sealed record GooglePlaceResponse(
     [property: JsonPropertyName("formattedAddress")] string? FormattedAddress,
     [property: JsonPropertyName("location")] GoogleLocation? Location,
     [property: JsonPropertyName("primaryType")] string? PrimaryType,
-    [property: JsonPropertyName("googleMapsUri")] string? GoogleMapsUri);
+    [property: JsonPropertyName("googleMapsUri")] string? GoogleMapsUri,
+    [property: JsonPropertyName("websiteUri")] string? WebsiteUri = null,
+    [property: JsonPropertyName("nationalPhoneNumber")] string? NationalPhoneNumber = null,
+    [property: JsonPropertyName("rating")] decimal? Rating = null,
+    [property: JsonPropertyName("userRatingCount")] int? UserRatingCount = null,
+    [property: JsonPropertyName("regularOpeningHours")] GoogleOpeningHours? RegularOpeningHours = null);
 
 internal sealed record GoogleLocalizedText(
     [property: JsonPropertyName("text")] string? Text);
@@ -28,3 +33,7 @@ internal sealed record GoogleLocalizedText(
 internal sealed record GoogleLocation(
     [property: JsonPropertyName("latitude")] decimal Latitude,
     [property: JsonPropertyName("longitude")] decimal Longitude);
+
+internal sealed record GoogleOpeningHours(
+    [property: JsonPropertyName("weekdayDescriptions")]
+    IReadOnlyCollection<string>? WeekdayDescriptions);

@@ -33,6 +33,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ISalidasApiService, SalidasApiService>();
 		builder.Services.AddSingleton<ICiudadesApiService, CiudadesApiService>();
 		builder.Services.AddSingleton<ILugaresApiService, LugaresApiService>();
+		builder.Services.AddSingleton<CrearSalidaDraftService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

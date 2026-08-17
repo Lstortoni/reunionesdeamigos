@@ -7,6 +7,11 @@ public interface IProveedorLugaresExternos
     Task<IReadOnlyCollection<LugarExternoDto>> BuscarAsync(
         ConsultaLugaresExternos consulta,
         CancellationToken cancellationToken);
+
+    Task<LugarExternoDetalleDto?> ObtenerDetalleAsync(
+        string googlePlaceId,
+        string? idioma,
+        CancellationToken cancellationToken);
 }
 
 public sealed record ConsultaLugaresExternos(

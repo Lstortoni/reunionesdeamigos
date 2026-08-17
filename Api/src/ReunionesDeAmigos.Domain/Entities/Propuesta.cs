@@ -14,7 +14,7 @@ public sealed class Propuesta
         Guid salidaId,
         Guid participanteSalidaId,
         TipoPropuesta tipo,
-        Guid? lugarId,
+        string? googlePlaceId,
         string? nombreManual,
         string? descripcionManual,
         string? direccionManual,
@@ -24,7 +24,7 @@ public sealed class Propuesta
         SalidaId = salidaId;
         ParticipanteSalidaId = participanteSalidaId;
         Tipo = tipo;
-        LugarId = lugarId;
+        GooglePlaceId = googlePlaceId;
         NombreManual = nombreManual;
         DescripcionManual = descripcionManual;
         DireccionManual = direccionManual;
@@ -39,7 +39,7 @@ public sealed class Propuesta
 
     public TipoPropuesta Tipo { get; private set; }
 
-    public Guid? LugarId { get; private set; }
+    public string? GooglePlaceId { get; private set; }
 
     public string? NombreManual { get; private set; }
 
@@ -49,26 +49,21 @@ public sealed class Propuesta
 
     public DateTimeOffset FechaCreacion { get; private set; }
 
-    internal static Propuesta CrearDeCatalogo(
+    internal static Propuesta CrearExterna(
         Guid salidaId,
         Guid participanteSalidaId,
-        Lugar lugar,
+        string googlePlaceId,
         DateTimeOffset fechaCreacion)
     {
-        ArgumentNullException.ThrowIfNull(lugar);
-
-        if (!lugar.Activo)
-        {
-            throw new DomainException(
-                "No se puede proponer un lugar inactivo.");
-        }
-
         return new Propuesta(
             Guid.NewGuid(),
             salidaId,
             participanteSalidaId,
-            TipoPropuesta.LugarCatalogo,
-            lugar.Id,
+            TipoPropuesta.LugarExterno,
+            ValidarTextoObligatorio(
+                googlePlaceId,
+                255,
+                "El identificador de Google Places es obligatorio."),
             null,
             null,
             null,

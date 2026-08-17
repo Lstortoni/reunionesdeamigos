@@ -28,7 +28,6 @@ public sealed class SalidaServiceTests
         var servicio = new SalidaService(
             new SalidaRepositoryEnMemoria(almacenamiento),
             new UsuarioRepositoryEnMemoria(almacenamiento),
-            new LugarRepositoryEnMemoria(almacenamiento),
             unitOfWork,
             new ClockFijo(fechaActual),
             new CodigoAccesoGeneratorFijo("CENA-1234"));

@@ -10,10 +10,11 @@ internal sealed class PropuestaConfiguration : IEntityTypeConfiguration<Propuest
     {
         builder.ToTable("propuestas", table => table.HasCheckConstraint(
             "CK_propuestas_tipo",
-            "(\"Tipo\" = 1 AND \"LugarId\" IS NOT NULL AND \"NombreManual\" IS NULL) OR " +
-            "(\"Tipo\" = 2 AND \"LugarId\" IS NULL AND \"NombreManual\" IS NOT NULL)"));
+            "(\"Tipo\" = 1 AND \"GooglePlaceId\" IS NOT NULL AND \"NombreManual\" IS NULL) OR " +
+            "(\"Tipo\" = 2 AND \"GooglePlaceId\" IS NULL AND \"NombreManual\" IS NOT NULL)"));
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
+        builder.Property(x => x.GooglePlaceId).HasMaxLength(255);
         builder.Property(x => x.NombreManual).HasMaxLength(150);
         builder.Property(x => x.DescripcionManual).HasMaxLength(1000);
         builder.Property(x => x.DireccionManual).HasMaxLength(250);
@@ -22,11 +23,6 @@ internal sealed class PropuestaConfiguration : IEntityTypeConfiguration<Propuest
             .WithMany()
             .HasForeignKey(x => x.ParticipanteSalidaId)
             .OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne<Lugar>()
-            .WithMany()
-            .HasForeignKey(x => x.LugarId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(x => new { x.SalidaId, x.LugarId }).IsUnique();
+        builder.HasIndex(x => new { x.SalidaId, x.GooglePlaceId }).IsUnique();
     }
 }

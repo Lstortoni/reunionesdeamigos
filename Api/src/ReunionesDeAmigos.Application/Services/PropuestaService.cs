@@ -7,51 +7,26 @@ using ReunionesDeAmigos.Domain.Entities;
 
 namespace ReunionesDeAmigos.Application.Services;
 
-public sealed class PropuestaService : IPropuestaService
+public sealed class PropuestaService(
+    ISalidaRepository salidaRepository,
+    IUnitOfWork unitOfWork,
+    IClock clock) : IPropuestaService
 {
-    private readonly ISalidaRepository _salidaRepository;
-    private readonly ILugarRepository _lugarRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IClock _clock;
-
-    public PropuestaService(
-        ISalidaRepository salidaRepository,
-        ILugarRepository lugarRepository,
-        IUnitOfWork unitOfWork,
-        IClock clock)
-    {
-        _salidaRepository = salidaRepository;
-        _lugarRepository = lugarRepository;
-        _unitOfWork = unitOfWork;
-        _clock = clock;
-    }
-
-    public async Task<PropuestaDto> AgregarDeCatalogoAsync(
+    public async Task<PropuestaDto> AgregarExternaAsync(
         Guid salidaId,
         Guid participanteSalidaId,
-        Guid lugarId,
+        AgregarPropuestaExternaRequest request,
         CancellationToken cancellationToken)
     {
-        var salida = await ObtenerSalidaAsync(
-            salidaId,
-            cancellationToken);
-        var lugar = await _lugarRepository.ObtenerPorIdAsync(
-            lugarId,
-            cancellationToken);
+        ArgumentNullException.ThrowIfNull(request);
 
-        if (lugar is null)
-        {
-            throw new NotFoundException(
-                "No se encontró el lugar.");
-        }
-
-        var propuesta = salida.AgregarPropuestaDeCatalogo(
+        var salida = await ObtenerSalidaAsync(salidaId, cancellationToken);
+        var propuesta = salida.AgregarPropuestaExterna(
             participanteSalidaId,
-            lugar,
-            _clock.UtcNow);
+            request.GooglePlaceId,
+            clock.UtcNow);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return PropuestaMapper.ToDto(propuesta);
     }
 
@@ -63,19 +38,15 @@ public sealed class PropuestaService : IPropuestaService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var salida = await ObtenerSalidaAsync(
-            salidaId,
-            cancellationToken);
-
+        var salida = await ObtenerSalidaAsync(salidaId, cancellationToken);
         var propuesta = salida.AgregarPropuestaManual(
             participanteSalidaId,
             request.Nombre,
             request.Descripcion,
             request.Direccion,
-            _clock.UtcNow);
+            clock.UtcNow);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return PropuestaMapper.ToDto(propuesta);
     }
 
@@ -83,16 +54,11 @@ public sealed class PropuestaService : IPropuestaService
         Guid salidaId,
         CancellationToken cancellationToken)
     {
-        var salida = await _salidaRepository.ObtenerPorIdAsync(
+        var salida = await salidaRepository.ObtenerPorIdAsync(
             salidaId,
             cancellationToken);
 
-        if (salida is null)
-        {
-            throw new NotFoundException(
-                "No se encontró la salida.");
-        }
-
-        return salida;
+        return salida
+            ?? throw new NotFoundException("No se encontró la salida.");
     }
 }

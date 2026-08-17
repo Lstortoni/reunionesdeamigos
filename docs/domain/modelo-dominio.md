@@ -9,11 +9,11 @@ de acceso por WhatsApp u otro medio. Quienes ingresan con una cuenta o como
 invitados se convierten en participantes, agregan propuestas y votan una vez
 finalizado el período de propuestas.
 
-El lugar elegido puede pertenecer al catálogo público o ser una opción manual,
-como una casa particular o pedir comida.
+El lugar elegido puede provenir de Google Places o ser una opción manual, como
+una casa particular o pedir comida.
 
 Al crear una salida se cargan exactamente tres propuestas iniciales. Pueden
-combinar lugares del catálogo con opciones manuales. El creador queda registrado
+combinar lugares externos con opciones manuales. El creador queda registrado
 como participante y como autor de esas propuestas.
 
 ## Modelo general
@@ -217,8 +217,9 @@ los lugares iniciales se cargarán mediante scripts separados ubicados en
 
 ## Lugar
 
-Representa un lugar permanente del catálogo público y existe
-independientemente de las salidas.
+Representa el catálogo local creado durante la primera etapa. Después de
+incorporar Google Places dejó de utilizarse para crear propuestas. Se conserva
+temporalmente hasta decidir si se reutiliza o se elimina en una migración futura.
 
 Datos iniciales:
 
@@ -268,7 +269,7 @@ Datos iniciales:
 - Salida.
 - Participante que la creó.
 - Tipo de propuesta.
-- Lugar opcional.
+- Identificador de Google Places opcional.
 - Nombre manual opcional.
 - Descripción manual opcional.
 - Dirección manual opcional.
@@ -276,15 +277,16 @@ Datos iniciales:
 
 Existen dos tipos:
 
-### Propuesta de catálogo
+### Propuesta de lugar externo
 
-- `LugarId` es obligatorio.
-- El nombre y la dirección visibles se obtienen del lugar.
+- `GooglePlaceId` es obligatorio.
+- El identificador puede almacenarse y se utiliza para consultar información
+  actualizada a Google Places.
 - Los campos manuales no se utilizan.
 
 ### Propuesta manual
 
-- `LugarId` no está presente.
+- `GooglePlaceId` no está presente.
 - El nombre manual es obligatorio.
 - La descripción y la dirección son opcionales.
 - No se incorpora automáticamente al catálogo.
@@ -295,7 +297,7 @@ Reglas:
 - Solo se crean mientras la salida está recibiendo propuestas.
 - No se crean propuestas en una salida cancelada.
 - Una propuesta pertenece únicamente a la salida donde fue creada.
-- Un mismo lugar del catálogo no puede proponerse más de una vez en la misma
+- Un mismo `GooglePlaceId` no puede proponerse más de una vez en la misma
   salida.
 - Dos propuestas manuales no pueden tener el mismo nombre después de quitar
   espacios sobrantes e ignorar diferencias entre mayúsculas y minúsculas.
@@ -378,7 +380,7 @@ con la cuenta registrada o con la credencial privada del invitado.
 - Un usuario registrado no puede participar dos veces en la misma salida.
 - Un participante tiene como máximo un voto.
 - Las claves foráneas conservan las relaciones entre las entidades.
-- Una propuesta es manual o de catálogo, pero no ambas.
+- Una propuesta es manual o externa, pero no ambas.
 
 Las reglas que dependen del estado, las fechas o la pertenencia a una misma
 salida también se validarán en el dominio y en los casos de uso.

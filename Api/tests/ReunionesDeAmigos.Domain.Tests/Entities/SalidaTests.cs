@@ -16,43 +16,43 @@ public sealed class SalidaTests
         TimeSpan.Zero);
 
     [Fact]
-    public void AgregarPropuestaDeCatalogo_DeberiaAgregarElLugarALaSalida()
+    public void AgregarPropuestaExterna_DeberiaAgregarElLugarALaSalida()
     {
         // Arrange
         var salida = CrearSalida();
-        var lugar = CrearLugar();
+        const string googlePlaceId = "ChIJ-lugar-prueba";
         var participanteCreador = Assert.Single(
             salida.Participantes);
 
         // Act
-        var propuesta = salida.AgregarPropuestaDeCatalogo(
+        var propuesta = salida.AgregarPropuestaExterna(
             participanteCreador.Id,
-            lugar,
+            googlePlaceId,
             FechaActual.AddDays(1));
 
         // Assert
         var propuestaGuardada = Assert.Single(
             salida.Propuestas);
         Assert.Equal(propuesta.Id, propuestaGuardada.Id);
-        Assert.Equal(lugar.Id, propuestaGuardada.LugarId);
+        Assert.Equal(googlePlaceId, propuestaGuardada.GooglePlaceId);
     }
 
     [Fact]
-    public void AgregarPropuestaDeCatalogo_DeberiaRechazarUnLugarDuplicado()
+    public void AgregarPropuestaExterna_DeberiaRechazarUnLugarDuplicado()
     {
         // Arrange
         var salida = CrearSalida();
-        var lugar = CrearLugar();
+        const string googlePlaceId = "ChIJ-lugar-prueba";
         var participante = Assert.Single(salida.Participantes);
-        salida.AgregarPropuestaDeCatalogo(
+        salida.AgregarPropuestaExterna(
             participante.Id,
-            lugar,
+            googlePlaceId,
             FechaActual.AddDays(1));
 
         // Act
-        var accion = () => salida.AgregarPropuestaDeCatalogo(
+        var accion = () => salida.AgregarPropuestaExterna(
             participante.Id,
-            lugar,
+            googlePlaceId,
             FechaActual.AddDays(1));
 
         // Assert
@@ -140,19 +140,4 @@ public sealed class SalidaTests
             FechaActual);
     }
 
-    private static Lugar CrearLugar()
-    {
-        var ciudad = Ciudad.Crear(
-            "La Plata",
-            "Buenos Aires",
-            "Argentina");
-
-        return Lugar.Crear(
-            "La Trattoria",
-            "Restaurante italiano",
-            "Calle 12",
-            "Centro",
-            ciudad,
-            TipoLugar.Restaurante);
-    }
 }

@@ -17,6 +17,9 @@ internal sealed class GooglePlacesClient(
     private const string FieldMask =
         "places.id,places.displayName,places.formattedAddress," +
         "places.location,places.primaryType,places.googleMapsUri";
+    private const string DetailFieldMask =
+        "id,displayName,formattedAddress,location,primaryType,googleMapsUri," +
+        "websiteUri,nationalPhoneNumber,rating,userRatingCount,regularOpeningHours";
 
     private readonly GooglePlacesOptions _options = options.Value;
 
@@ -66,6 +69,48 @@ internal sealed class GooglePlacesClient(
             ?? [];
     }
 
+    public async Task<LugarExternoDetalleDto?> ObtenerDetalleAsync(
+        string googlePlaceId,
+        string? idioma,
+        CancellationToken cancellationToken)
+    {
+        var languageCode = idioma ?? _options.DefaultLanguageCode;
+        var url =
+            $"v1/places/{Uri.EscapeDataString(googlePlaceId)}" +
+            $"?languageCode={Uri.EscapeDataString(languageCode)}" +
+            $"&regionCode={Uri.EscapeDataString(_options.DefaultRegionCode)}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("X-Goog-Api-Key", _options.ApiKey);
+        request.Headers.Add("X-Goog-FieldMask", DetailFieldMask);
+
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning(
+                "Google Places respondió con el código HTTP {StatusCode} al obtener el detalle.",
+                (int)response.StatusCode);
+            throw new ExternalServiceException(
+                "No se pudo obtener el detalle del lugar externo.");
+        }
+
+        var lugar = await response.Content.ReadFromJsonAsync<GooglePlaceResponse>(
+            cancellationToken: cancellationToken);
+
+        return lugar is null || !EsLugarValido(lugar)
+            ? null
+            : ToDetalleDto(lugar);
+    }
+
     private static bool EsLugarValido(GooglePlaceResponse lugar) =>
         !string.IsNullOrWhiteSpace(lugar.Id) &&
         !string.IsNullOrWhiteSpace(lugar.DisplayName?.Text) &&
@@ -80,4 +125,19 @@ internal sealed class GooglePlacesClient(
             lugar.Location.Longitude,
             lugar.PrimaryType,
             lugar.GoogleMapsUri);
+
+    private static LugarExternoDetalleDto ToDetalleDto(GooglePlaceResponse lugar) =>
+        new(
+            lugar.Id!,
+            lugar.DisplayName!.Text!,
+            lugar.FormattedAddress,
+            lugar.Location!.Latitude,
+            lugar.Location.Longitude,
+            lugar.PrimaryType,
+            lugar.GoogleMapsUri,
+            lugar.WebsiteUri,
+            lugar.NationalPhoneNumber,
+            lugar.Rating,
+            lugar.UserRatingCount,
+            lugar.RegularOpeningHours?.WeekdayDescriptions ?? []);
 }

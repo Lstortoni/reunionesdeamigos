@@ -1,0 +1,92 @@
+@page "/salidas/crear/lugar"
+@inject CrearSalidaDraftService Draft
+@inject ICiudadesApiService CiudadesApiService
+@inject ILugaresApiService LugaresApiService
+@inject ISessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Buscar lugar</PageTitle>
+<main class="home-page">
+    <header class="page-header">
+        <button class="back-button" @onclick="Volver" aria-label="Volver">‹</button>
+        <div><p class="eyebrow">Nueva propuesta</p><h1>Buscar un lugar</h1></div>
+    </header>
+    <section class="places-filters">
+        <div class="form-field"><label for="ciudadPropuesta">Ciudad</label>
+            <select id="ciudadPropuesta" class="form-control" @bind="_ciudadSeleccionada">
+                <option value="">Seleccioná una ciudad</option>
+                @foreach (var ciudad in _ciudades) { <option value="@ciudad.Id">@ciudad.Nombre</option> }
+            </select></div>
+        <div class="form-field"><label for="tipoPropuesta">Tipo</label>
+            <select id="tipoPropuesta" class="form-control" @bind="_tipoSeleccionado">
+                <option value="">Cualquier tipo</option>
+                @foreach (var tipo in Enum.GetValues<TipoLugar>()) { <option value="@((int)tipo)">@ObtenerTipo(tipo)</option> }
+            </select></div>
+        <div class="form-field"><label for="textoPropuesta">Qué estás buscando (opcional)</label>
+            <input id="textoPropuesta" class="form-control" placeholder="Ejemplo: pizza, con pastelería..." @bind="_texto" /></div>
+        <button class="btn btn-primary places-search-button" disabled="@_cargando" @onclick="BuscarAsync">@(_cargando ? "Buscando..." : "Buscar lugares")</button>
+    </section>
+    <section class="places-results">
+        @if (_cargando) { <div class="state-card">Cargando...</div> }
+        else if (_error is not null) { <div class="state-card error-state"><p>@_error</p></div> }
+        else if (!_busquedaRealizada) { <div class="state-card"><p>Elegí una ciudad y un tipo, o escribí qué buscás.</p></div> }
+        else if (_lugares.Count == 0) { <div class="state-card"><p>No encontramos lugares. Probá con otros filtros.</p></div> }
+        else
+        {
+            <p class="results-count">@_lugares.Count resultado(s)</p>
+            <div class="places-list">
+                @foreach (var lugar in _lugares)
+                {
+                    <article class="place-card">
+                        <div class="outing-card-topline"><span class="status-pill">@FormatearTipoGoogle(lugar.TipoGoogle)</span></div>
+                        <h3>@lugar.Nombre</h3><p>@lugar.Direccion</p>
+                        <button class="btn btn-primary select-place-button" @onclick="() => Seleccionar(lugar)">Elegir este lugar</button>
+                    </article>
+                }
+            </div>
+            <p class="places-attribution">Resultados proporcionados por Google Maps</p>
+        }
+    </section>
+</main>
+
+@code {
+    private IReadOnlyCollection<CiudadDto> _ciudades = [];
+    private IReadOnlyCollection<LugarExternoDto> _lugares = [];
+    private string _ciudadSeleccionada = string.Empty, _tipoSeleccionado = string.Empty, _texto = string.Empty;
+    private bool _cargando = true, _busquedaRealizada;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Draft.Nombre) || Draft.EstaCompleto) { Volver(); return; }
+        try { _ciudades = await CiudadesApiService.ObtenerAsync(); }
+        catch (HttpRequestException) { _error = "No se pudo conectar con la API."; }
+        catch (ApiException ex) { _error = ex.Message; }
+        catch (Exception) { _error = "Ocurrió un error al cargar las ciudades."; }
+        finally { _cargando = false; }
+    }
+
+    private async Task BuscarAsync()
+    {
+        _error = null;
+        if (!Guid.TryParse(_ciudadSeleccionada, out var ciudadId)) { _error = "Seleccioná una ciudad."; return; }
+        TipoLugar? tipo = int.TryParse(_tipoSeleccionado, out var valor) ? (TipoLugar)valor : null;
+        if (!tipo.HasValue && string.IsNullOrWhiteSpace(_texto)) { _error = "Elegí un tipo o escribí qué buscás."; return; }
+        _cargando = true; _busquedaRealizada = true;
+        try { _lugares = await LugaresApiService.BuscarExternosAsync(ciudadId, tipo, null, _texto, "es", 10); }
+        catch (SesionVencidaException) { SessionService.Cerrar(); Navigation.NavigateTo("/login", true); }
+        catch (HttpRequestException) { _error = "No se pudo conectar con la API."; }
+        catch (ApiException ex) { _error = ex.Message; }
+        catch (Exception) { _error = "Ocurrió un error al buscar lugares."; }
+        finally { _cargando = false; }
+    }
+
+    private void Seleccionar(LugarExternoDto lugar)
+    {
+        _error = Draft.AgregarExterna(lugar);
+        if (_error is null) Volver();
+    }
+    private static string ObtenerTipo(TipoLugar tipo) => tipo switch { TipoLugar.Cafe => "Café", TipoLugar.Pizzeria => "Pizzería", TipoLugar.Cerveceria => "Cervecería", _ => tipo.ToString() };
+    private static string FormatearTipoGoogle(string? tipo) => string.IsNullOrWhiteSpace(tipo) ? "Lugar" : char.ToUpperInvariant(tipo[0]) + tipo[1..].Replace('_', ' ');
+    private void Volver() => Navigation.NavigateTo("/salidas/crear/opciones");
+}

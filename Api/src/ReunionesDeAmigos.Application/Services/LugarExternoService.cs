@@ -12,6 +12,27 @@ public sealed class LugarExternoService(
     IProveedorLugaresExternos proveedorLugaresExternos)
     : ILugarExternoService
 {
+    public async Task<LugarExternoDetalleDto> ObtenerDetalleAsync(
+        string googlePlaceId,
+        string? idioma,
+        CancellationToken cancellationToken)
+    {
+        var id = Normalizar(googlePlaceId);
+        if (id is null)
+        {
+            throw new ApplicationValidationException(
+                "El identificador de Google Places es obligatorio.");
+        }
+
+        var detalle = await proveedorLugaresExternos.ObtenerDetalleAsync(
+            id,
+            Normalizar(idioma),
+            cancellationToken);
+
+        return detalle
+            ?? throw new NotFoundException("No se encontró el lugar en Google Places.");
+    }
+
     public async Task<IReadOnlyCollection<LugarExternoDto>> BuscarAsync(
         BuscarLugaresExternosRequest request,
         CancellationToken cancellationToken)

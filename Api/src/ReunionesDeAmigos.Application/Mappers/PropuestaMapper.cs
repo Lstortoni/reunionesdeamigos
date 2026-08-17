@@ -11,7 +11,7 @@ internal static class PropuestaMapper
             propuesta.Id,
             propuesta.ParticipanteSalidaId,
             propuesta.Tipo,
-            propuesta.LugarId,
+            propuesta.GooglePlaceId,
             propuesta.NombreManual,
             propuesta.DescripcionManual,
             propuesta.DireccionManual,

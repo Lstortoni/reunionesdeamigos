@@ -14,7 +14,6 @@ public sealed class SalidaService : ISalidaService
 
     private readonly ISalidaRepository _salidaRepository;
     private readonly IUsuarioRepository _usuarioRepository;
-    private readonly ILugarRepository _lugarRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly ICodigoAccesoGenerator _codigoAccesoGenerator;
@@ -22,14 +21,12 @@ public sealed class SalidaService : ISalidaService
     public SalidaService(
         ISalidaRepository salidaRepository,
         IUsuarioRepository usuarioRepository,
-        ILugarRepository lugarRepository,
         IUnitOfWork unitOfWork,
         IClock clock,
         ICodigoAccesoGenerator codigoAccesoGenerator)
     {
         _salidaRepository = salidaRepository;
         _usuarioRepository = usuarioRepository;
-        _lugarRepository = lugarRepository;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _codigoAccesoGenerator = codigoAccesoGenerator;
@@ -73,12 +70,11 @@ public sealed class SalidaService : ISalidaService
             fechaActual);
 
         var participanteCreador = salida.Participantes.Single();
-        await AgregarPropuestasInicialesAsync(
+        AgregarPropuestasIniciales(
             salida,
             participanteCreador.Id,
             request.PropuestasIniciales,
-            fechaActual,
-            cancellationToken);
+            fechaActual);
 
         await _salidaRepository.AgregarAsync(
             salida,
@@ -172,12 +168,11 @@ public sealed class SalidaService : ISalidaService
         }
     }
 
-    private async Task AgregarPropuestasInicialesAsync(
+    private static void AgregarPropuestasIniciales(
         Salida salida,
         Guid participanteCreadorId,
         IReadOnlyCollection<CrearPropuestaInicialRequest> propuestas,
-        DateTimeOffset fechaActual,
-        CancellationToken cancellationToken)
+        DateTimeOffset fechaActual)
     {
         foreach (var propuesta in propuestas)
         {
@@ -185,20 +180,24 @@ public sealed class SalidaService : ISalidaService
 
             switch (propuesta.Tipo)
             {
-                case TipoPropuesta.LugarCatalogo:
-                    await AgregarPropuestaDeCatalogoAsync(
-                        salida,
+                case TipoPropuesta.LugarExterno:
+                    if (string.IsNullOrWhiteSpace(propuesta.GooglePlaceId))
+                    {
+                        throw new ApplicationValidationException(
+                            "Una propuesta externa debe indicar GooglePlaceId.");
+                    }
+
+                    salida.AgregarPropuestaExterna(
                         participanteCreadorId,
-                        propuesta,
-                        fechaActual,
-                        cancellationToken);
+                        propuesta.GooglePlaceId,
+                        fechaActual);
                     break;
 
                 case TipoPropuesta.Manual:
-                    if (propuesta.LugarId.HasValue)
+                    if (!string.IsNullOrWhiteSpace(propuesta.GooglePlaceId))
                     {
                         throw new ApplicationValidationException(
-                            "Una propuesta manual no puede indicar LugarId.");
+                            "Una propuesta manual no puede indicar GooglePlaceId.");
                     }
 
                     salida.AgregarPropuestaManual(
@@ -216,32 +215,4 @@ public sealed class SalidaService : ISalidaService
         }
     }
 
-    private async Task AgregarPropuestaDeCatalogoAsync(
-        Salida salida,
-        Guid participanteCreadorId,
-        CrearPropuestaInicialRequest propuesta,
-        DateTimeOffset fechaActual,
-        CancellationToken cancellationToken)
-    {
-        if (!propuesta.LugarId.HasValue)
-        {
-            throw new ApplicationValidationException(
-                "Una propuesta de catálogo debe indicar LugarId.");
-        }
-
-        var lugar = await _lugarRepository.ObtenerPorIdAsync(
-            propuesta.LugarId.Value,
-            cancellationToken);
-
-        if (lugar is null)
-        {
-            throw new NotFoundException(
-                "No se encontró uno de los lugares seleccionados.");
-        }
-
-        salida.AgregarPropuestaDeCatalogo(
-            participanteCreadorId,
-            lugar,
-            fechaActual);
-    }
 }
