@@ -76,7 +76,8 @@ Datos iniciales:
 - Identificador.
 - Nombre.
 - Descripción opcional.
-- Fecha del encuentro.
+- Modalidad de fecha.
+- Fecha del encuentro opcional, obligatoria solamente en modalidad fija.
 - Fin del período de propuestas.
 - Fin de la votación.
 - Código general de acceso único.
@@ -106,13 +107,48 @@ nombres de las personas invitadas.
 La salida comienza con un único participante: el creador. La colección aumenta
 a medida que otras personas ingresan.
 
-Las fechas deben cumplir:
+Los plazos siempre deben cumplir:
 
 ```text
 fecha de creación
     < fin de propuestas
     < fin de votación
-    < fecha del encuentro
+```
+
+En modalidad fija, la fecha del encuentro también debe ser posterior al fin de
+la votación. En modalidad a definir, todas las opciones deben ser posteriores a
+ese fin.
+
+### Definición de la fecha
+
+Una salida puede crearse con una de estas modalidades:
+
+- `Fija`: el creador conoce la fecha del encuentro desde el comienzo. En esta
+  modalidad `FechaEncuentro` es obligatoria y no se crean opciones de fecha.
+- `ADefinir`: la fecha se acuerda entre los participantes. En esta modalidad
+  `FechaEncuentro` comienza vacía y el creador carga al menos dos opciones
+  iniciales.
+
+Una `OpcionFecha` pertenece a una sola salida, contiene fecha y hora, e
+identifica al participante que la propuso. Mientras se reciben propuestas,
+otros participantes pueden agregar opciones que no estén repetidas.
+
+Durante la votación, cada participante informa para cada opción si puede o no
+puede asistir. Esa respuesta se representa mediante `DisponibilidadFecha`. No
+es un voto único: una persona puede estar disponible en varias opciones.
+
+Al terminar la votación se conservan todos los resultados para poder consultar
+quién puede asistir en cada fecha. Además, se destacan como máximo las tres
+opciones con mayor cantidad de personas disponibles.
+
+No se confirma una única fecha ni existe una opción ganadora. En la modalidad
+`ADefinir`, `FechaEncuentro` permanece vacía. Las fechas destacadas sirven para
+que el grupo continúe organizándose después de haber elegido el lugar.
+
+```text
+Salida
+  └── muchas OpcionesFecha
+        └── muchas DisponibilidadesFecha
 ```
 
 ### Estados
@@ -122,14 +158,15 @@ El estado temporal se calcula a partir de las fechas:
 ```text
 Antes del fin de propuestas -> RecibiendoPropuestas
 Antes del fin de votación   -> VotacionAbierta
-Después del fin de votación y antes del encuentro -> Confirmada
+Después del fin de votación -> Confirmada con sus fechas destacadas
 ```
 
 Una salida cancelada siempre tiene estado `Cancelada`, independientemente de
 sus fechas.
 
-`Finalizada` podrá representar una salida cuya fecha de encuentro ya pasó. No
-necesita comportamiento especial en la primera versión.
+En una salida con fecha fija, `Finalizada` representa que la fecha del encuentro
+ya pasó. En una salida con fecha a definir, representa que ya pasaron las fechas
+destacadas.
 
 ### Modificaciones
 
@@ -137,7 +174,7 @@ Mientras la votación no haya terminado, el creador puede modificar:
 
 - Nombre.
 - Descripción.
-- Fecha del encuentro.
+- Fecha del encuentro, solamente si la modalidad es fija.
 
 El fin de propuestas solo puede modificarse mientras se reciben propuestas. El
 fin de votación puede modificarse antes de su vencimiento.

@@ -16,5 +16,15 @@ public sealed class SalidaCreadaDto
 
     public string CodigoAcceso { get; init; } = string.Empty;
 
+    public string EnlaceInvitacion { get; init; } = string.Empty;
+
     public EstadoSalida Estado { get; init; }
+
+    public Guid CreadorId { get; init; }
+
+    public IReadOnlyCollection<ParticipanteSalidaDto> Participantes { get; init; }
+        = [];
+
+    public IReadOnlyCollection<PropuestaDto> Propuestas { get; init; }
+        = [];
 }

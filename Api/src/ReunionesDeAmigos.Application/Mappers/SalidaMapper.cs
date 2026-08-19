@@ -7,7 +7,8 @@ internal static class SalidaMapper
 {
     public static SalidaDto ToDto(
         Salida salida,
-        DateTimeOffset fechaActual)
+        DateTimeOffset fechaActual,
+        string enlaceInvitacion)
     {
         var participantes = salida.Participantes
             .Select(ParticipanteSalidaMapper.ToDto)
@@ -24,6 +25,7 @@ internal static class SalidaMapper
             salida.FechaFinPropuestas,
             salida.FechaFinVotacion,
             salida.CodigoAcceso,
+            enlaceInvitacion,
             salida.ObtenerEstado(fechaActual),
             salida.CreadorId,
             participantes,

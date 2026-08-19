@@ -5,7 +5,7 @@ namespace ReunionesDeAmigos.Application.DTOs.Salidas;
 public sealed record SalidaResumenDto(
     Guid Id,
     string Nombre,
-    DateTimeOffset FechaEncuentro,
+    DateTimeOffset? FechaEncuentro,
     EstadoSalida Estado,
     bool EsCreador,
     int CantidadParticipantes);

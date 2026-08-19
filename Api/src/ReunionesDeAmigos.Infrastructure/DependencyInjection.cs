@@ -9,6 +9,7 @@ using ReunionesDeAmigos.Infrastructure.Persistence;
 using ReunionesDeAmigos.Infrastructure.Persistence.Repositories;
 using ReunionesDeAmigos.Infrastructure.Security;
 using ReunionesDeAmigos.Infrastructure.Time;
+using ReunionesDeAmigos.Infrastructure.Links;
 
 namespace ReunionesDeAmigos.Infrastructure;
 
@@ -73,6 +74,18 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<ICodigoAccesoGenerator, CodigoAccesoGenerator>();
+        services.Configure<AppLinksOptions>(options =>
+        {
+            options.PublicBaseUrl = configuration["AppLinks:PublicBaseUrl"]
+                ?? string.Empty;
+        });
+        var publicBaseUrl = configuration["AppLinks:PublicBaseUrl"];
+        if (!Uri.TryCreate(publicBaseUrl, UriKind.Absolute, out _))
+        {
+            throw new InvalidOperationException(
+                "AppLinks:PublicBaseUrl debe ser una URL absoluta válida.");
+        }
+        services.AddSingleton<IEnlaceInvitacionGenerator, EnlaceInvitacionGenerator>();
         services.AddSingleton<ICredencialInvitadoService, CredencialInvitadoService>();
         services.Configure<JwtOptions>(options =>
         {

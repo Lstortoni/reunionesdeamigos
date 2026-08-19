@@ -17,19 +17,22 @@ public sealed class SalidaService : ISalidaService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClock _clock;
     private readonly ICodigoAccesoGenerator _codigoAccesoGenerator;
+    private readonly IEnlaceInvitacionGenerator _enlaceInvitacionGenerator;
 
     public SalidaService(
         ISalidaRepository salidaRepository,
         IUsuarioRepository usuarioRepository,
         IUnitOfWork unitOfWork,
         IClock clock,
-        ICodigoAccesoGenerator codigoAccesoGenerator)
+        ICodigoAccesoGenerator codigoAccesoGenerator,
+        IEnlaceInvitacionGenerator enlaceInvitacionGenerator)
     {
         _salidaRepository = salidaRepository;
         _usuarioRepository = usuarioRepository;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _codigoAccesoGenerator = codigoAccesoGenerator;
+        _enlaceInvitacionGenerator = enlaceInvitacionGenerator;
     }
 
     public async Task<SalidaDto> CrearAsync(
@@ -82,7 +85,7 @@ public sealed class SalidaService : ISalidaService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return SalidaMapper.ToDto(salida, fechaActual);
+        return CrearDto(salida, fechaActual);
     }
 
     public async Task<SalidaDto> ObtenerPorIdAsync(
@@ -101,7 +104,7 @@ public sealed class SalidaService : ISalidaService
                 "No se encontró la salida.");
         }
 
-        return SalidaMapper.ToDto(salida, _clock.UtcNow);
+        return CrearDto(salida, _clock.UtcNow);
     }
 
     public async Task<IReadOnlyCollection<SalidaResumenDto>> ObtenerMiasAsync(
@@ -144,6 +147,19 @@ public sealed class SalidaService : ISalidaService
 
         throw new ConflictException(
             "No se pudo generar un código de acceso único.");
+    }
+
+    private SalidaDto CrearDto(
+        Salida salida,
+        DateTimeOffset fechaActual)
+    {
+        var enlaceInvitacion = _enlaceInvitacionGenerator.Generar(
+            salida.CodigoAcceso);
+
+        return SalidaMapper.ToDto(
+            salida,
+            fechaActual,
+            enlaceInvitacion);
     }
 
     private static void ValidarDuraciones(CrearSalidaRequest request)

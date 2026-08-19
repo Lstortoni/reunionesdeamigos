@@ -9,6 +9,7 @@ public sealed class Salida
     private readonly List<ParticipanteSalida> _participantes = [];
     private readonly List<Propuesta> _propuestas = [];
     private readonly List<Voto> _votos = [];
+    private readonly List<OpcionFecha> _opcionesFecha = [];
 
     private Salida()
     {
@@ -18,7 +19,8 @@ public sealed class Salida
         Guid id,
         string nombre,
         string? descripcion,
-        DateTimeOffset fechaEncuentro,
+        ModalidadFecha modalidadFecha,
+        DateTimeOffset? fechaEncuentro,
         DateTimeOffset fechaFinPropuestas,
         DateTimeOffset fechaFinVotacion,
         string codigoAcceso,
@@ -28,12 +30,17 @@ public sealed class Salida
         Id = id;
         Nombre = ValidarNombre(nombre);
         Descripcion = ValidarDescripcion(descripcion);
-        ValidarFechas(
+        ValidarPlazos(
             fechaCreacion,
             fechaFinPropuestas,
-            fechaFinVotacion,
-            fechaEncuentro);
+            fechaFinVotacion);
 
+        if (modalidadFecha == ModalidadFecha.Fija)
+        {
+            ValidarFechaEncuentro(fechaEncuentro, fechaFinVotacion);
+        }
+
+        ModalidadFecha = modalidadFecha;
         FechaEncuentro = fechaEncuentro;
         FechaFinPropuestas = fechaFinPropuestas;
         FechaFinVotacion = fechaFinVotacion;
@@ -51,7 +58,9 @@ public sealed class Salida
 
     public string? Descripcion { get; private set; }
 
-    public DateTimeOffset FechaEncuentro { get; private set; }
+    public ModalidadFecha ModalidadFecha { get; private set; }
+
+    public DateTimeOffset? FechaEncuentro { get; private set; }
 
     public DateTimeOffset FechaFinPropuestas { get; private set; }
 
@@ -70,6 +79,8 @@ public sealed class Salida
     public IReadOnlyCollection<Propuesta> Propuestas => _propuestas.AsReadOnly();
 
     public IReadOnlyCollection<Voto> Votos => _votos.AsReadOnly();
+
+    public IReadOnlyCollection<OpcionFecha> OpcionesFecha => _opcionesFecha.AsReadOnly();
 
     public static Salida Crear(
         string nombre,
@@ -92,12 +103,61 @@ public sealed class Salida
             Guid.NewGuid(),
             nombre,
             descripcion,
+            ModalidadFecha.Fija,
             fechaEncuentro,
             fechaFinPropuestas,
             fechaFinVotacion,
             codigoAcceso,
             creador,
             fechaCreacion);
+    }
+
+    public static Salida CrearConFechaADefinir(
+        string nombre,
+        string? descripcion,
+        IReadOnlyCollection<DateTimeOffset> opcionesFechaIniciales,
+        DateTimeOffset fechaFinPropuestas,
+        DateTimeOffset fechaFinVotacion,
+        string codigoAcceso,
+        Usuario creador,
+        DateTimeOffset fechaCreacion)
+    {
+        ArgumentNullException.ThrowIfNull(creador);
+        ArgumentNullException.ThrowIfNull(opcionesFechaIniciales);
+
+        if (!creador.Activo)
+        {
+            throw new DomainException("Un usuario inactivo no puede crear una salida.");
+        }
+
+        if (opcionesFechaIniciales.Count < 2)
+        {
+            throw new DomainException(
+                "Una salida con fecha a definir necesita al menos dos opciones iniciales.");
+        }
+
+        var salida = new Salida(
+            Guid.NewGuid(),
+            nombre,
+            descripcion,
+            ModalidadFecha.ADefinir,
+            null,
+            fechaFinPropuestas,
+            fechaFinVotacion,
+            codigoAcceso,
+            creador,
+            fechaCreacion);
+        var participanteCreador = salida._participantes.Single();
+
+        foreach (var fechaHora in opcionesFechaIniciales)
+        {
+            salida.AgregarOpcionFecha(
+                participanteCreador.Id,
+                fechaHora,
+                fechaCreacion);
+        }
+
+        return salida;
     }
 
     public bool TieneParticipanteRegistrado(Guid usuarioId)
@@ -123,7 +183,19 @@ public sealed class Salida
             return EstadoSalida.VotacionAbierta;
         }
 
-        if (fechaActual < FechaEncuentro)
+        if (ModalidadFecha == ModalidadFecha.ADefinir)
+        {
+            var ultimaFechaPosible = ObtenerOpcionesFechaOrdenadas()
+                .Take(3)
+                .Select(x => (DateTimeOffset?)x.FechaHora)
+                .Max();
+
+            return ultimaFechaPosible.HasValue && fechaActual >= ultimaFechaPosible.Value
+                ? EstadoSalida.Finalizada
+                : EstadoSalida.Confirmada;
+        }
+
+        if (fechaActual < FechaEncuentro!.Value)
         {
             return EstadoSalida.Confirmada;
         }
@@ -155,6 +227,129 @@ public sealed class Salida
 
         _participantes.Add(participante);
         return participante;
+    }
+
+    public OpcionFecha AgregarOpcionFecha(
+        Guid participanteSalidaId,
+        DateTimeOffset fechaHora,
+        DateTimeOffset fechaCreacion)
+    {
+        if (ModalidadFecha != ModalidadFecha.ADefinir)
+        {
+            throw new DomainException(
+                "Una salida con fecha fija no admite opciones de fecha.");
+        }
+
+        ValidarPropuestaPermitida(participanteSalidaId, fechaCreacion);
+
+        if (fechaHora <= FechaFinVotacion)
+        {
+            throw new DomainException(
+                "La opción de fecha debe ser posterior al fin de la votación.");
+        }
+
+        if (_opcionesFecha.Any(x => x.FechaHora == fechaHora))
+        {
+            throw new DomainException(
+                "La fecha y hora ya fueron propuestas en esta salida.");
+        }
+
+        var opcion = OpcionFecha.Crear(
+            Id,
+            participanteSalidaId,
+            fechaHora,
+            fechaCreacion);
+
+        _opcionesFecha.Add(opcion);
+        return opcion;
+    }
+
+    public DisponibilidadFecha RegistrarDisponibilidadFecha(
+        Guid participanteSalidaId,
+        Guid opcionFechaId,
+        bool disponible,
+        DateTimeOffset fechaRespuesta)
+    {
+        if (ModalidadFecha != ModalidadFecha.ADefinir)
+        {
+            throw new DomainException(
+                "Una salida con fecha fija no registra disponibilidades.");
+        }
+
+        if (ObtenerEstado(fechaRespuesta) != EstadoSalida.VotacionAbierta)
+        {
+            throw new DomainException(
+                "La disponibilidad solo puede informarse durante la votación.");
+        }
+
+        ValidarParticipante(participanteSalidaId);
+        var opcion = _opcionesFecha.FirstOrDefault(x => x.Id == opcionFechaId)
+            ?? throw new DomainException(
+                "La opción de fecha no pertenece a esta salida.");
+
+        return opcion.RegistrarDisponibilidad(
+            participanteSalidaId,
+            disponible,
+            fechaRespuesta);
+    }
+
+    public ResultadoDisponibilidadFecha ObtenerResultadoDisponibilidad(
+        DateTimeOffset fechaActual)
+    {
+        if (ModalidadFecha != ModalidadFecha.ADefinir)
+        {
+            throw new DomainException(
+                "Una salida con fecha fija no tiene resultados de disponibilidad.");
+        }
+
+        if (fechaActual < FechaFinVotacion)
+        {
+            throw new DomainException(
+                "El resultado estará disponible cuando finalice la votación.");
+        }
+
+        var participantes = _participantes.Select(x => x.Id).ToArray();
+        var opciones = ObtenerOpcionesFechaOrdenadas(participantes);
+
+        return new ResultadoDisponibilidadFecha(
+            participantes.Length,
+            opciones,
+            opciones.Take(3).ToArray());
+    }
+
+    private DisponibilidadOpcionFecha[] ObtenerOpcionesFechaOrdenadas(
+        IReadOnlyCollection<Guid>? participantesSalidaIds = null)
+    {
+        var participantes = participantesSalidaIds?.ToArray()
+            ?? _participantes.Select(x => x.Id).ToArray();
+
+        return _opcionesFecha
+            .Select(opcion =>
+            {
+                var disponibles = opcion.Disponibilidades
+                    .Where(x => x.Disponible)
+                    .Select(x => x.ParticipanteSalidaId)
+                    .ToArray();
+                var noDisponibles = opcion.Disponibilidades
+                    .Where(x => !x.Disponible)
+                    .Select(x => x.ParticipanteSalidaId)
+                    .ToArray();
+                var respondieron = disponibles.Concat(noDisponibles).ToHashSet();
+                var sinResponder = participantes
+                    .Where(x => !respondieron.Contains(x))
+                    .ToArray();
+
+                return new DisponibilidadOpcionFecha(
+                    opcion.Id,
+                    opcion.FechaHora,
+                    disponibles.Length,
+                    disponibles,
+                    noDisponibles,
+                    sinResponder);
+            })
+            .OrderByDescending(x => x.CantidadDisponibles)
+            .ThenBy(x => x.FechaHora)
+            .ToArray();
     }
 
     public ParticipanteSalida AgregarParticipanteInvitado(
@@ -311,6 +506,12 @@ public sealed class Salida
         ValidarCreador(usuarioSolicitanteId);
         ValidarSalidaActiva();
 
+        if (ModalidadFecha != ModalidadFecha.Fija)
+        {
+            throw new DomainException(
+                "Una salida con fecha a definir no admite una única fecha de encuentro.");
+        }
+
         if (fechaActual >= FechaFinVotacion)
         {
             throw new DomainException(
@@ -342,11 +543,12 @@ public sealed class Salida
                 "El plazo de propuestas solo puede modificarse mientras se reciben propuestas.");
         }
 
-        ValidarFechas(
+        ValidarPlazos(
             fechaActual,
             nuevaFecha,
-            FechaFinVotacion,
-            FechaEncuentro);
+            FechaFinVotacion);
+
+        ValidarLimiteOpcionesFecha(FechaFinVotacion);
 
         FechaFinPropuestas = nuevaFecha;
     }
@@ -377,11 +579,13 @@ public sealed class Salida
                 "El fin de votación debe ser posterior al fin de propuestas.");
         }
 
-        if (FechaEncuentro <= nuevaFecha)
+        if (FechaEncuentro.HasValue && FechaEncuentro.Value <= nuevaFecha)
         {
             throw new DomainException(
                 "La fecha del encuentro debe ser posterior al fin de votación.");
         }
+
+        ValidarLimiteOpcionesFecha(nuevaFecha);
 
         FechaFinVotacion = nuevaFecha;
     }
@@ -452,11 +656,19 @@ public sealed class Salida
         }
     }
 
-    private static void ValidarFechas(
+    private void ValidarLimiteOpcionesFecha(DateTimeOffset fechaFinVotacion)
+    {
+        if (_opcionesFecha.Any(x => x.FechaHora <= fechaFinVotacion))
+        {
+            throw new DomainException(
+                "El fin de votación debe ser anterior a todas las opciones de fecha.");
+        }
+    }
+
+    private static void ValidarPlazos(
         DateTimeOffset fechaReferencia,
         DateTimeOffset fechaFinPropuestas,
-        DateTimeOffset fechaFinVotacion,
-        DateTimeOffset fechaEncuentro)
+        DateTimeOffset fechaFinVotacion)
     {
         if (fechaFinPropuestas <= fechaReferencia)
         {
@@ -470,7 +682,19 @@ public sealed class Salida
                 "El fin de votación debe ser posterior al fin de propuestas.");
         }
 
-        if (fechaEncuentro <= fechaFinVotacion)
+    }
+
+    private static void ValidarFechaEncuentro(
+        DateTimeOffset? fechaEncuentro,
+        DateTimeOffset fechaFinVotacion)
+    {
+        if (!fechaEncuentro.HasValue)
+        {
+            throw new DomainException(
+                "La fecha del encuentro es obligatoria para una salida con fecha fija.");
+        }
+
+        if (fechaEncuentro.Value <= fechaFinVotacion)
         {
             throw new DomainException(
                 "La fecha del encuentro debe ser posterior al fin de votación.");

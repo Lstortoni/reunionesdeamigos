@@ -604,3 +604,71 @@ body {
 .select-place-button {
     margin-top: 0.9rem;
 }
+
+.creation-description,
+.creator-summary {
+    color: #6d645b;
+}
+
+.creation-periods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.creation-periods div,
+.invitation-link {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.85rem;
+    border-radius: 12px;
+    background: #f8f3ec;
+}
+
+.created-proposals {
+    margin: 1.25rem 0;
+}
+
+.created-proposals h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.05rem;
+}
+
+.created-proposal {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.4rem 0.65rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid #eee7df;
+}
+
+.created-proposal small {
+    grid-column: 2;
+    color: #6d645b;
+}
+
+.invitation-link {
+    margin: 0 0 0.75rem;
+    overflow-wrap: anywhere;
+}
+
+.invitation-link span {
+    color: #8a4324;
+    font-weight: 650;
+}
+
+.invitation-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.copy-confirmation {
+    margin: 0 0 0.75rem;
+    color: #477348;
+    font-size: 0.9rem;
+    font-weight: 650;
+}

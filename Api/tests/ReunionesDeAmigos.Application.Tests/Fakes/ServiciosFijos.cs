@@ -15,3 +15,12 @@ internal sealed class CodigoAccesoGeneratorFijo(string codigo)
         return codigo;
     }
 }
+
+internal sealed class EnlaceInvitacionGeneratorFijo(string baseUrl)
+    : IEnlaceInvitacionGenerator
+{
+    public string Generar(string codigoAcceso)
+    {
+        return $"{baseUrl.TrimEnd('/')}/unirse/{codigoAcceso}";
+    }
+}

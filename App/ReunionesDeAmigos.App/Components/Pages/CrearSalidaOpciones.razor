@@ -15,7 +15,47 @@
         <section class="creation-success">
             <p class="eyebrow">Salida creada</p><h2>@_salidaCreada.Nombre</h2>
             <p>@_salidaCreada.FechaEncuentro.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")</p>
+            @if (!string.IsNullOrWhiteSpace(_salidaCreada.Descripcion))
+            {
+                <p class="creation-description">@_salidaCreada.Descripcion</p>
+            }
+
+            <div class="creation-periods">
+                <div><small>Propuestas hasta</small><strong>@_salidaCreada.FechaFinPropuestas.ToLocalTime().ToString("dd/MM · HH:mm")</strong></div>
+                <div><small>Votación hasta</small><strong>@_salidaCreada.FechaFinVotacion.ToLocalTime().ToString("dd/MM · HH:mm")</strong></div>
+            </div>
+
+            <section class="created-proposals">
+                <h3>Opciones iniciales</h3>
+                @foreach (var propuesta in _propuestasMostradas)
+                {
+                    <article class="created-proposal">
+                        <span class="status-pill">@(propuesta.Tipo == TipoPropuesta.Manual ? "Manual" : "Google")</span>
+                        <strong>@propuesta.NombreVisible</strong>
+                        @if (!string.IsNullOrWhiteSpace(propuesta.DireccionVisible))
+                        {
+                            <small>@propuesta.DireccionVisible</small>
+                        }
+                    </article>
+                }
+            </section>
+
+            <p class="creator-summary">
+                @_salidaCreada.Participantes.Count participante(s) · Vos ya estás incluido como creador
+            </p>
             <div class="access-code"><small>Código de acceso</small><strong>@_salidaCreada.CodigoAcceso</strong></div>
+            <div class="invitation-link">
+                <small>Enlace de invitación</small>
+                <span>@_salidaCreada.EnlaceInvitacion</span>
+            </div>
+            <div class="invitation-actions">
+                <button class="btn btn-outline-secondary" @onclick="CopiarEnlaceAsync">Copiar enlace</button>
+                <button class="btn btn-primary" @onclick="CompartirEnlaceAsync">Compartir</button>
+            </div>
+            @if (_enlaceCopiado)
+            {
+                <p class="copy-confirmation">Enlace copiado.</p>
+            }
             <button class="btn btn-primary places-search-button" @onclick="IrAMisSalidas">Ver mis salidas</button>
             <button class="btn btn-outline-secondary secondary-action" @onclick="IrAlInicio">Volver al inicio</button>
         </section>
@@ -59,6 +99,8 @@
     private bool _creando;
     private string? _error;
     private SalidaCreadaDto? _salidaCreada;
+    private IReadOnlyCollection<PropuestaSalidaDraft> _propuestasMostradas = [];
+    private bool _enlaceCopiado;
     protected override void OnInitialized() { if (string.IsNullOrWhiteSpace(Draft.Nombre)) Navigation.NavigateTo("/salidas/crear", true); }
     private void VolverADatos() => Navigation.NavigateTo("/salidas/crear");
     private void IrAMisSalidas() => Navigation.NavigateTo("/salidas/mias");
@@ -69,11 +111,35 @@
     {
         if (!Draft.EstaCompleto) return;
         _creando = true; _error = null;
-        try { _salidaCreada = await SalidasApiService.CrearAsync(Draft.CrearRequest()); Draft.Limpiar(); }
+        try
+        {
+            _propuestasMostradas = Draft.Propuestas.ToArray();
+            _salidaCreada = await SalidasApiService.CrearAsync(Draft.CrearRequest());
+            Draft.Limpiar();
+        }
         catch (SesionVencidaException) { SessionService.Cerrar(); Navigation.NavigateTo("/login", true); }
         catch (HttpRequestException) { _error = "No se pudo conectar con la API."; }
         catch (ApiException ex) { _error = ex.Message; }
         catch (Exception) { _error = "Ocurrió un error al crear la salida."; }
         finally { _creando = false; }
+    }
+
+    private async Task CopiarEnlaceAsync()
+    {
+        if (_salidaCreada is null) return;
+        await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default
+            .SetTextAsync(_salidaCreada.EnlaceInvitacion);
+        _enlaceCopiado = true;
+    }
+
+    private async Task CompartirEnlaceAsync()
+    {
+        if (_salidaCreada is null) return;
+        await Microsoft.Maui.ApplicationModel.DataTransfer.Share.Default.RequestAsync(
+            new Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest
+            {
+                Title = $"Invitación a {_salidaCreada.Nombre}",
+                Text = $"Te invito a {_salidaCreada.Nombre}. Entrá desde este enlace: {_salidaCreada.EnlaceInvitacion}"
+            });
     }
 }

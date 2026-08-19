@@ -30,7 +30,8 @@ public sealed class SalidaServiceTests
             new UsuarioRepositoryEnMemoria(almacenamiento),
             unitOfWork,
             new ClockFijo(fechaActual),
-            new CodigoAccesoGeneratorFijo("CENA-1234"));
+            new CodigoAccesoGeneratorFijo("CENA-1234"),
+            new EnlaceInvitacionGeneratorFijo("https://app.test"));
         var request = new CrearSalidaRequest(
             "Cena del sábado",
             null,
@@ -56,10 +57,14 @@ public sealed class SalidaServiceTests
         var salidaGuardada = Assert.Single(almacenamiento.Salidas);
         var participante = Assert.Single(salidaGuardada.Participantes);
         Assert.Equal("CENA-1234", resultado.CodigoAcceso);
-        Assert.Equal(TimeSpan.Zero, resultado.FechaEncuentro.Offset);
+        Assert.Equal(
+            "https://app.test/unirse/CENA-1234",
+            resultado.EnlaceInvitacion);
+        Assert.NotNull(resultado.FechaEncuentro);
+        Assert.Equal(TimeSpan.Zero, resultado.FechaEncuentro.Value.Offset);
         Assert.Equal(
             fechaEncuentroLocal.UtcDateTime,
-            resultado.FechaEncuentro.UtcDateTime);
+            resultado.FechaEncuentro.Value.UtcDateTime);
         Assert.Equal(creador.Id, participante.UsuarioId);
         Assert.Equal(3, salidaGuardada.Propuestas.Count);
         Assert.Equal(3, resultado.Propuestas.Count);
