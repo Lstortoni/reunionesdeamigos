@@ -30,6 +30,8 @@ internal sealed class SalidaRepository(AppDbContext dbContext)
         await dbContext.Salidas
             .AsNoTracking()
             .Include(x => x.Participantes)
+            .Include(x => x.OpcionesFecha)
+                .ThenInclude(x => x.Disponibilidades)
             .Where(x => x.Participantes.Any(
                 participante => participante.UsuarioId == usuarioId))
             .OrderBy(x => x.FechaEncuentro)
@@ -55,5 +57,7 @@ internal sealed class SalidaRepository(AppDbContext dbContext)
             .Include(x => x.Participantes)
             .Include(x => x.Propuestas)
             .Include(x => x.Votos)
+            .Include(x => x.OpcionesFecha)
+                .ThenInclude(x => x.Disponibilidades)
             .AsSplitQuery();
 }

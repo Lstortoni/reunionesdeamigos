@@ -13,6 +13,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Ciudad> Ciudades => Set<Ciudad>();
     public DbSet<Propuesta> Propuestas => Set<Propuesta>();
     public DbSet<Voto> Votos => Set<Voto>();
+    public DbSet<OpcionFecha> OpcionesFecha => Set<OpcionFecha>();
+    public DbSet<DisponibilidadFecha> DisponibilidadesFecha => Set<DisponibilidadFecha>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

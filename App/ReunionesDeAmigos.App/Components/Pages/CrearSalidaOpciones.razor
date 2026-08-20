@@ -14,7 +14,20 @@
     {
         <section class="creation-success">
             <p class="eyebrow">Salida creada</p><h2>@_salidaCreada.Nombre</h2>
-            <p>@_salidaCreada.FechaEncuentro.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")</p>
+            @if (_salidaCreada.FechaEncuentro.HasValue)
+            {
+                <p>@_salidaCreada.FechaEncuentro.Value.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")</p>
+            }
+            else
+            {
+                <p>Fecha a definir entre los participantes</p>
+                <div class="date-option-list">
+                    @foreach (var opcion in _salidaCreada.OpcionesFecha)
+                    {
+                        <article class="date-option-item"><span>@opcion.FechaHora.ToLocalTime().ToString("dddd dd/MM · HH:mm")</span></article>
+                    }
+                </div>
+            }
             @if (!string.IsNullOrWhiteSpace(_salidaCreada.Descripcion))
             {
                 <p class="creation-description">@_salidaCreada.Descripcion</p>
@@ -64,8 +77,8 @@
     {
         <p class="creation-step">Paso 2 de 2 · Propuestas iniciales</p>
         <section class="creation-form">
-            <div class="creation-summary"><strong>@Draft.Nombre</strong><span>@Draft.Fecha.Add(Draft.Hora).ToString("dd/MM/yyyy · HH:mm")</span></div>
-            <div class="selected-proposals-header"><h2>Tres opciones iniciales</h2><p>Elegidas: @Draft.Propuestas.Count de 3</p></div>
+            <div class="creation-summary"><strong>@Draft.Nombre</strong><span>@ObtenerResumenFecha()</span></div>
+            <div class="selected-proposals-header"><h2>Opciones iniciales</h2><p>Elegidas: @Draft.Propuestas.Count de 3</p></div>
             @if (Draft.Propuestas.Count == 0)
             { <div class="state-card"><p>Todavía no elegiste ninguna opción.</p></div> }
             else
@@ -85,11 +98,11 @@
                 </div>
             }
             <div class="proposal-actions">
-                <button class="btn btn-primary places-search-button" disabled="@Draft.EstaCompleto" @onclick="BuscarLugar">Buscar un lugar</button>
-                <button class="btn btn-outline-secondary secondary-action" disabled="@Draft.EstaCompleto" @onclick="AgregarManual">Escribir una opción manual</button>
+                <button class="btn btn-primary places-search-button" disabled="@Draft.AlcanzoLimitePropuestas" @onclick="BuscarLugar">Buscar un lugar</button>
+                <button class="btn btn-outline-secondary secondary-action" disabled="@Draft.AlcanzoLimitePropuestas" @onclick="AgregarManual">Escribir una opción manual</button>
             </div>
             @if (_error is not null) { <div class="auth-error" role="alert">@_error</div> }
-            <button class="btn btn-primary create-outing-button" disabled="@(!Draft.EstaCompleto || _creando)" @onclick="CrearAsync">
+            <button class="btn btn-primary create-outing-button" disabled="@(!Draft.PuedeCrear || _creando)" @onclick="CrearAsync">
                 @(_creando ? "Creando..." : "Crear salida")</button>
         </section>
     }
@@ -107,9 +120,12 @@
     private void IrAlInicio() => Navigation.NavigateTo("/inicio");
     private void BuscarLugar() => Navigation.NavigateTo("/salidas/crear/lugar");
     private void AgregarManual() => Navigation.NavigateTo("/salidas/crear/manual");
+    private string ObtenerResumenFecha() => Draft.Modalidad == ModalidadFecha.Fija
+        ? Draft.Fecha.Add(Draft.Hora).ToString("dd/MM/yyyy · HH:mm")
+        : $"{Draft.OpcionesFecha.Count} opciones de fecha";
     private async Task CrearAsync()
     {
-        if (!Draft.EstaCompleto) return;
+        if (!Draft.PuedeCrear) return;
         _creando = true; _error = null;
         try
         {

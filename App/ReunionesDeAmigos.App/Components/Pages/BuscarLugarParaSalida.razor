@@ -58,7 +58,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrWhiteSpace(Draft.Nombre) || Draft.EstaCompleto) { Volver(); return; }
+        if (string.IsNullOrWhiteSpace(Draft.Nombre) || Draft.AlcanzoLimitePropuestas) { Volver(); return; }
         try { _ciudades = await CiudadesApiService.ObtenerAsync(); }
         catch (HttpRequestException) { _error = "No se pudo conectar con la API."; }
         catch (ApiException ex) { _error = ex.Message; }

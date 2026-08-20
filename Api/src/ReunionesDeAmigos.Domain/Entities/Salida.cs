@@ -40,7 +40,7 @@ public sealed class Salida
             ValidarFechaEncuentro(fechaEncuentro, fechaFinVotacion);
         }
 
-        ModalidadFecha = modalidadFecha;
+        Modalidad = modalidadFecha;
         FechaEncuentro = fechaEncuentro;
         FechaFinPropuestas = fechaFinPropuestas;
         FechaFinVotacion = fechaFinVotacion;
@@ -58,7 +58,7 @@ public sealed class Salida
 
     public string? Descripcion { get; private set; }
 
-    public ModalidadFecha ModalidadFecha { get; private set; }
+    public ModalidadFecha Modalidad { get; private set; }
 
     public DateTimeOffset? FechaEncuentro { get; private set; }
 
@@ -130,10 +130,10 @@ public sealed class Salida
             throw new DomainException("Un usuario inactivo no puede crear una salida.");
         }
 
-        if (opcionesFechaIniciales.Count < 2)
+        if (opcionesFechaIniciales.Count is < 2 or > 3)
         {
             throw new DomainException(
-                "Una salida con fecha a definir necesita al menos dos opciones iniciales.");
+                "Una salida con fecha a definir necesita entre dos y tres opciones iniciales.");
         }
 
         var salida = new Salida(
@@ -183,7 +183,7 @@ public sealed class Salida
             return EstadoSalida.VotacionAbierta;
         }
 
-        if (ModalidadFecha == ModalidadFecha.ADefinir)
+        if (Modalidad == ModalidadFecha.ADefinir)
         {
             var ultimaFechaPosible = ObtenerOpcionesFechaOrdenadas()
                 .Take(3)
@@ -234,7 +234,7 @@ public sealed class Salida
         DateTimeOffset fechaHora,
         DateTimeOffset fechaCreacion)
     {
-        if (ModalidadFecha != ModalidadFecha.ADefinir)
+        if (Modalidad != ModalidadFecha.ADefinir)
         {
             throw new DomainException(
                 "Una salida con fecha fija no admite opciones de fecha.");
@@ -254,6 +254,20 @@ public sealed class Salida
                 "La fecha y hora ya fueron propuestas en esta salida.");
         }
 
+
+        if (_opcionesFecha.Count >= 6)
+        {
+            throw new DomainException(
+                "La salida puede tener como máximo seis opciones de fecha.");
+        }
+
+        if (_opcionesFecha.Count(x =>
+                x.ParticipanteSalidaId == participanteSalidaId) >= 3)
+        {
+            throw new DomainException(
+                "Cada participante puede proponer como máximo tres opciones de fecha.");
+        }
+
         var opcion = OpcionFecha.Crear(
             Id,
             participanteSalidaId,
@@ -270,7 +284,7 @@ public sealed class Salida
         bool disponible,
         DateTimeOffset fechaRespuesta)
     {
-        if (ModalidadFecha != ModalidadFecha.ADefinir)
+        if (Modalidad != ModalidadFecha.ADefinir)
         {
             throw new DomainException(
                 "Una salida con fecha fija no registra disponibilidades.");
@@ -296,7 +310,7 @@ public sealed class Salida
     public ResultadoDisponibilidadFecha ObtenerResultadoDisponibilidad(
         DateTimeOffset fechaActual)
     {
-        if (ModalidadFecha != ModalidadFecha.ADefinir)
+        if (Modalidad != ModalidadFecha.ADefinir)
         {
             throw new DomainException(
                 "Una salida con fecha fija no tiene resultados de disponibilidad.");
@@ -375,6 +389,7 @@ public sealed class Salida
         DateTimeOffset fechaCreacion)
     {
         ValidarPropuestaPermitida(participanteSalidaId, fechaCreacion);
+        ValidarLimitePropuestasParticipante(participanteSalidaId);
 
         if (_propuestas.Any(propuesta =>
                 string.Equals(
@@ -404,6 +419,7 @@ public sealed class Salida
         DateTimeOffset fechaCreacion)
     {
         ValidarPropuestaPermitida(participanteSalidaId, fechaCreacion);
+        ValidarLimitePropuestasParticipante(participanteSalidaId);
 
         if (_propuestas.Any(propuesta => propuesta.TieneMismoNombreManual(nombre)))
         {
@@ -506,7 +522,7 @@ public sealed class Salida
         ValidarCreador(usuarioSolicitanteId);
         ValidarSalidaActiva();
 
-        if (ModalidadFecha != ModalidadFecha.Fija)
+        if (Modalidad != ModalidadFecha.Fija)
         {
             throw new DomainException(
                 "Una salida con fecha a definir no admite una única fecha de encuentro.");
@@ -636,6 +652,16 @@ public sealed class Salida
         {
             throw new DomainException(
                 "La persona no participa en esta salida.");
+        }
+    }
+
+    private void ValidarLimitePropuestasParticipante(Guid participanteSalidaId)
+    {
+        if (_propuestas.Count(x =>
+                x.ParticipanteSalidaId == participanteSalidaId) >= 3)
+        {
+            throw new DomainException(
+                "Cada participante puede proponer como máximo tres lugares.");
         }
     }
 

@@ -49,7 +49,10 @@
             <div class="outings-list">
                 @foreach (var salida in _salidas)
                 {
-                    <article class="outing-card">
+                    <article class="outing-card outing-card-button"
+                             role="button"
+                             tabindex="0"
+                             @onclick="() => VerDetalle(salida.Id)">
                         <div class="outing-card-topline">
                             <span class="status-pill">@ObtenerEstado(salida.Estado)</span>
                             @if (salida.EsCreador)
@@ -58,7 +61,9 @@
                             }
                         </div>
                         <h3>@salida.Nombre</h3>
-                        <p>@salida.FechaEncuentro.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")</p>
+                        <p>@(salida.FechaEncuentro.HasValue
+                            ? salida.FechaEncuentro.Value.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")
+                            : "Fecha a definir")</p>
                         <small>@salida.CantidadParticipantes participante(s)</small>
                     </article>
                 }
@@ -123,4 +128,7 @@
     {
         Navigation.NavigateTo("/inicio");
     }
+
+    private void VerDetalle(Guid salidaId) =>
+        Navigation.NavigateTo($"/salidas/{salidaId}");
 }

@@ -54,7 +54,6 @@ public sealed class SalidaService : ISalidaService
         }
 
         var fechaActual = _clock.UtcNow;
-        var fechaEncuentroUtc = request.FechaEncuentro.ToUniversalTime();
         var fechaFinPropuestas = fechaActual.AddDays(
             request.DiasParaPropuestas);
         var fechaFinVotacion = fechaFinPropuestas.AddDays(
@@ -62,15 +61,13 @@ public sealed class SalidaService : ISalidaService
         var codigoAcceso = await GenerarCodigoUnicoAsync(
             cancellationToken);
 
-        var salida = Salida.Crear(
-            request.Nombre,
-            request.Descripcion,
-            fechaEncuentroUtc,
+        var salida = CrearSalidaSegunModalidad(
+            request,
+            creador,
+            fechaActual,
             fechaFinPropuestas,
             fechaFinVotacion,
-            codigoAcceso,
-            creador,
-            fechaActual);
+            codigoAcceso);
 
         var participanteCreador = salida.Participantes.Single();
         AgregarPropuestasIniciales(
@@ -120,6 +117,7 @@ public sealed class SalidaService : ISalidaService
             .Select(salida => new SalidaResumenDto(
                 salida.Id,
                 salida.Nombre,
+                salida.Modalidad,
                 salida.FechaEncuentro,
                 salida.ObtenerEstado(fechaActual),
                 salida.CreadorId == usuarioId,
@@ -164,6 +162,12 @@ public sealed class SalidaService : ISalidaService
 
     private static void ValidarDuraciones(CrearSalidaRequest request)
     {
+        if (!Enum.IsDefined(request.Modalidad))
+        {
+            throw new ApplicationValidationException(
+                "La modalidad de fecha no es válida.");
+        }
+
         if (request.DiasParaPropuestas <= 0)
         {
             throw new ApplicationValidationException(
@@ -177,11 +181,72 @@ public sealed class SalidaService : ISalidaService
         }
 
         if (request.PropuestasIniciales is null ||
-            request.PropuestasIniciales.Count != 3)
+            request.PropuestasIniciales.Count is < 1 or > 3)
         {
             throw new ApplicationValidationException(
-                "La salida debe tener exactamente tres propuestas iniciales.");
+                "La salida debe tener entre una y tres propuestas iniciales.");
         }
+    }
+
+    private static Salida CrearSalidaSegunModalidad(
+        CrearSalidaRequest request,
+        Usuario creador,
+        DateTimeOffset fechaActual,
+        DateTimeOffset fechaFinPropuestas,
+        DateTimeOffset fechaFinVotacion,
+        string codigoAcceso)
+    {
+        if (request.Modalidad == ModalidadFecha.Fija)
+        {
+            if (!request.FechaEncuentro.HasValue)
+            {
+                throw new ApplicationValidationException(
+                    "Una salida con fecha fija debe indicar la fecha del encuentro.");
+            }
+
+            if (request.OpcionesFechaIniciales is { Count: > 0 })
+            {
+                throw new ApplicationValidationException(
+                    "Una salida con fecha fija no admite opciones de fecha.");
+            }
+
+            return Salida.Crear(
+                request.Nombre,
+                request.Descripcion,
+                request.FechaEncuentro.Value.ToUniversalTime(),
+                fechaFinPropuestas,
+                fechaFinVotacion,
+                codigoAcceso,
+                creador,
+                fechaActual);
+        }
+
+        if (request.FechaEncuentro.HasValue)
+        {
+            throw new ApplicationValidationException(
+                "Una salida con fecha a definir no debe indicar una fecha fija.");
+        }
+
+        if (request.OpcionesFechaIniciales is null ||
+            request.OpcionesFechaIniciales.Count is < 2 or > 3)
+        {
+            throw new ApplicationValidationException(
+                "Una salida con fecha a definir necesita entre dos y tres opciones de fecha.");
+        }
+
+        var opcionesUtc = request.OpcionesFechaIniciales
+            .Select(x => x.ToUniversalTime())
+            .ToArray();
+
+        return Salida.CrearConFechaADefinir(
+            request.Nombre,
+            request.Descripcion,
+            opcionesUtc,
+            fechaFinPropuestas,
+            fechaFinVotacion,
+            codigoAcceso,
+            creador,
+            fechaActual);
     }
 
     private static void AgregarPropuestasIniciales(

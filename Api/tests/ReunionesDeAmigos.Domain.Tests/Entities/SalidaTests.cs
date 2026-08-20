@@ -142,7 +142,7 @@ public sealed class SalidaTests
             creador,
             FechaActual);
 
-        Assert.Equal(ModalidadFecha.ADefinir, salida.ModalidadFecha);
+        Assert.Equal(ModalidadFecha.ADefinir, salida.Modalidad);
         Assert.Null(salida.FechaEncuentro);
         Assert.Equal(3, salida.OpcionesFecha.Count);
     }
@@ -254,8 +254,7 @@ public sealed class SalidaTests
             {
                 FechaActual.AddDays(10),
                 FechaActual.AddDays(11),
-                FechaActual.AddDays(12),
-                FechaActual.AddDays(13)
+                FechaActual.AddDays(12)
             },
             FechaActual.AddDays(3),
             FechaActual.AddDays(6),
@@ -263,6 +262,13 @@ public sealed class SalidaTests
             CrearUsuario(),
             FechaActual);
         var participante = Assert.Single(salida.Participantes);
+        var otroParticipante = salida.AgregarParticipanteRegistrado(
+            CrearUsuario(),
+            FechaActual.AddDays(1));
+        salida.AgregarOpcionFecha(
+            otroParticipante.Id,
+            FechaActual.AddDays(13),
+            FechaActual.AddDays(2));
         var opciones = salida.OpcionesFecha.OrderBy(x => x.FechaHora).ToArray();
 
         salida.RegistrarDisponibilidadFecha(

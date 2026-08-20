@@ -11,21 +11,57 @@
     </header>
     <p class="creation-step">Paso 1 de 2 · Datos del encuentro</p>
     <section class="creation-form">
-        <div class="form-field"><label for="nombre">Nombre de la salida</label>
-            <input id="nombre" class="form-control" maxlength="150" placeholder="Ejemplo: Cena del sábado" @bind="Draft.Nombre" /></div>
-        <div class="form-field"><label for="descripcion">Descripción (opcional)</label>
-            <textarea id="descripcion" class="form-control" maxlength="1000" rows="3" @bind="Draft.Descripcion"></textarea></div>
-        <div class="creation-date-grid">
-            <div class="form-field"><label for="fecha">Fecha</label><input id="fecha" type="date" class="form-control" value="@_fecha" @onchange="CambiarFecha" /></div>
-            <div class="form-field"><label for="hora">Hora</label><input id="hora" type="time" class="form-control" value="@_hora" @onchange="CambiarHora" /></div>
-        </div>
+        <div class="form-field"><label for="nombre">Nombre de la salida</label><input id="nombre" class="form-control" maxlength="150" placeholder="Ejemplo: Cena del sábado" @bind="Draft.Nombre" /></div>
+        <div class="form-field"><label for="descripcion">Descripción (opcional)</label><textarea id="descripcion" class="form-control" maxlength="1000" rows="3" @bind="Draft.Descripcion"></textarea></div>
+
+        <fieldset class="date-mode-fieldset">
+            <legend>¿Cuándo será la salida?</legend>
+            <label class="date-mode-option"><input type="radio" name="modalidadFecha" checked="@(Draft.Modalidad == ModalidadFecha.Fija)" @onchange="SeleccionarFechaFija" /><span><strong>Fecha definida</strong><small>Ya sabemos el día y la hora.</small></span></label>
+            <label class="date-mode-option"><input type="radio" name="modalidadFecha" checked="@(Draft.Modalidad == ModalidadFecha.ADefinir)" @onchange="SeleccionarFechasOpcionales" /><span><strong>Elegir entre varias fechas</strong><small>Los participantes indicarán cuándo pueden.</small></span></label>
+        </fieldset>
+
+        @if (Draft.Modalidad == ModalidadFecha.Fija)
+        {
+            <div class="creation-date-grid">
+                <div class="form-field"><label for="fecha">Fecha</label><input id="fecha" type="date" class="form-control" value="@_fecha" @onchange="CambiarFecha" /></div>
+                <div class="form-field"><label for="hora">Hora</label><input id="hora" type="time" class="form-control" value="@_hora" @onchange="CambiarHora" /></div>
+            </div>
+        }
+        else
+        {
+            <section class="date-options-editor">
+                <div class="date-options-heading"><div><strong>Opciones de fecha</strong><small>Agregá entre 2 y 3 opciones.</small></div><span>@Draft.OpcionesFecha.Count de 3</span></div>
+                @if (Draft.OpcionesFecha.Count == 0)
+                {
+                    <p class="empty-date-options">Todavía no agregaste ninguna fecha.</p>
+                }
+                else
+                {
+                    <div class="date-option-list">
+                        @for (var indice = 0; indice < Draft.OpcionesFecha.Count; indice++)
+                        {
+                            var opcion = Draft.OpcionesFecha[indice];
+                            var indiceActual = indice;
+                            <article class="date-option-item"><span>@opcion.ToLocalTime().ToString("dddd dd/MM · HH:mm")</span><button type="button" @onclick="() => QuitarOpcionFecha(indiceActual)">Quitar</button></article>
+                        }
+                    </div>
+                }
+                @if (Draft.OpcionesFecha.Count < 3)
+                {
+                    <div class="creation-date-grid">
+                        <div class="form-field"><label for="opcionFecha">Nueva fecha</label><input id="opcionFecha" type="date" class="form-control" value="@_opcionFecha" @onchange="CambiarOpcionFecha" /></div>
+                        <div class="form-field"><label for="opcionHora">Hora</label><input id="opcionHora" type="time" class="form-control" value="@_opcionHora" @onchange="CambiarOpcionHora" /></div>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary add-date-button" @onclick="AgregarOpcionFecha">+ Agregar fecha</button>
+                }
+            </section>
+        }
+
         <details class="voting-options">
             <summary>Configuración de propuestas y votación</summary>
             <p>Si dejás un campo vacío usaremos 3 días para propuestas y 2 días para votar.</p>
-            <div class="form-field"><label for="diasPropuestas">Días para proponer (opcional)</label>
-                <input id="diasPropuestas" type="number" min="1" class="form-control" placeholder="Predeterminado: 3" @bind="Draft.DiasParaPropuestas" /></div>
-            <div class="form-field"><label for="diasVotar">Días para votar (opcional)</label>
-                <input id="diasVotar" type="number" min="1" class="form-control" placeholder="Predeterminado: 2" @bind="Draft.DiasParaVotar" /></div>
+            <div class="form-field"><label for="diasPropuestas">Días para proponer (opcional)</label><input id="diasPropuestas" type="number" min="1" class="form-control" placeholder="Predeterminado: 3" @bind="Draft.DiasParaPropuestas" /></div>
+            <div class="form-field"><label for="diasVotar">Días para votar (opcional)</label><input id="diasVotar" type="number" min="1" class="form-control" placeholder="Predeterminado: 2" @bind="Draft.DiasParaVotar" /></div>
         </details>
         @if (_error is not null) { <div class="auth-error" role="alert">@_error</div> }
         <button class="btn btn-primary places-search-button" @onclick="Continuar">Continuar con las opciones</button>
@@ -35,6 +71,8 @@
 @code {
     private string _fecha = string.Empty;
     private string _hora = string.Empty;
+    private string _opcionFecha = string.Empty;
+    private string _opcionHora = string.Empty;
     private string? _error;
 
     protected override void OnInitialized()
@@ -43,51 +81,50 @@
         _hora = Draft.Hora.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
     }
 
-    private void Continuar()
-    {
-        _error = ValidarYGuardar();
-        if (_error is null) Navigation.NavigateTo("/salidas/crear/opciones");
-    }
-
+    private void Continuar() { _error = ValidarYGuardar(); if (_error is null) Navigation.NavigateTo("/salidas/crear/opciones"); }
     private void CambiarFecha(ChangeEventArgs evento) => _fecha = evento.Value?.ToString() ?? string.Empty;
     private void CambiarHora(ChangeEventArgs evento) => _hora = evento.Value?.ToString() ?? string.Empty;
+    private void CambiarOpcionFecha(ChangeEventArgs evento) => _opcionFecha = evento.Value?.ToString() ?? string.Empty;
+    private void CambiarOpcionHora(ChangeEventArgs evento) => _opcionHora = evento.Value?.ToString() ?? string.Empty;
+    private void SeleccionarFechaFija(ChangeEventArgs _) { Draft.CambiarModalidad(ModalidadFecha.Fija); _error = null; }
+    private void SeleccionarFechasOpcionales(ChangeEventArgs _) { Draft.CambiarModalidad(ModalidadFecha.ADefinir); _error = null; }
+    private void QuitarOpcionFecha(int indice) { Draft.QuitarOpcionFecha(indice); _error = null; }
     private void VolverAlInicio() => Navigation.NavigateTo("/inicio");
+
+    private void AgregarOpcionFecha()
+    {
+        if (!DateTime.TryParseExact(_opcionFecha, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fecha)) { _error = "Elegí una fecha válida."; return; }
+        if (!TryParseHora(_opcionHora, out var hora)) { _error = "Elegí una hora válida."; return; }
+        var diasPropuestas = Draft.DiasParaPropuestas ?? 3;
+        var diasVotacion = Draft.DiasParaVotar ?? 2;
+        if (fecha.Date + hora <= DateTime.Now.AddDays(diasPropuestas + diasVotacion)) { _error = "La opción debe ser posterior al período completo de propuestas y votación."; return; }
+        _error = Draft.AgregarOpcionFecha(fecha, hora);
+        if (_error is null) { _opcionFecha = string.Empty; _opcionHora = string.Empty; }
+    }
 
     private string? ValidarYGuardar()
     {
         if (string.IsNullOrWhiteSpace(Draft.Nombre)) return "Ingresá un nombre para la salida.";
-        if (!DateTime.TryParseExact(_fecha, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fecha))
-            return "Elegí una fecha válida.";
-        if (!TryParseHora(_hora, out var hora))
-            return "Elegí una hora válida.";
         var diasPropuestas = Draft.DiasParaPropuestas ?? 3;
         var diasVotacion = Draft.DiasParaVotar ?? 2;
         if (diasPropuestas <= 0 || diasVotacion <= 0) return "Los períodos deben ser mayores que cero.";
-        if (fecha.Date + hora <= DateTime.Now.AddDays(diasPropuestas + diasVotacion))
-            return "El encuentro debe ser posterior al período completo de propuestas y votación.";
+        if (Draft.Modalidad == ModalidadFecha.Fija)
+        {
+            if (!DateTime.TryParseExact(_fecha, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fecha)) return "Elegí una fecha válida.";
+            if (!TryParseHora(_hora, out var hora)) return "Elegí una hora válida.";
+            if (fecha.Date + hora <= DateTime.Now.AddDays(diasPropuestas + diasVotacion)) return "El encuentro debe ser posterior al período completo de propuestas y votación.";
+            Draft.Fecha = fecha.Date;
+            Draft.Hora = hora;
+        }
+        else if (Draft.OpcionesFecha.Count is < 2 or > 3) return "Agregá entre dos y tres opciones de fecha.";
         Draft.Nombre = Draft.Nombre.Trim();
-        Draft.Fecha = fecha.Date;
-        Draft.Hora = hora;
         return null;
     }
 
     private static bool TryParseHora(string valor, out TimeSpan hora)
     {
-        if (TimeSpan.TryParse(valor, CultureInfo.InvariantCulture, out hora) ||
-            TimeSpan.TryParse(valor, CultureInfo.CurrentCulture, out hora))
-        {
-            return true;
-        }
-
-        if (DateTime.TryParse(valor, CultureInfo.InvariantCulture,
-                DateTimeStyles.AllowWhiteSpaces, out var fechaHora) ||
-            DateTime.TryParse(valor, CultureInfo.CurrentCulture,
-                DateTimeStyles.AllowWhiteSpaces, out fechaHora))
-        {
-            hora = fechaHora.TimeOfDay;
-            return true;
-        }
-
+        if (TimeSpan.TryParse(valor, CultureInfo.InvariantCulture, out hora) || TimeSpan.TryParse(valor, CultureInfo.CurrentCulture, out hora)) return true;
+        if (DateTime.TryParse(valor, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var fechaHora) || DateTime.TryParse(valor, CultureInfo.CurrentCulture, DateTimeStyles.AllowWhiteSpaces, out fechaHora)) { hora = fechaHora.TimeOfDay; return true; }
         hora = default;
         return false;
     }

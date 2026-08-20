@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "MlgK+j9WNdY=",
+  "dgSpecHash": "UhzoyBZq+SA=",
   "success": true,
-  "projectFilePath": "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\Api\\src\\ReunionesDeAmigos.Api\\ReunionesDeAmigos.Api.csproj",
+  "projectFilePath": "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\api\\src\\ReunionesDeAmigos.Api\\ReunionesDeAmigos.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\dstortoni\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\dstortoni\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.8\\microsoft.aspnetcore.authentication.jwtbearer.8.0.8.nupkg.sha512",

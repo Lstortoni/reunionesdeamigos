@@ -7,6 +7,7 @@ public sealed record SalidaDto(
     Guid Id,
     string Nombre,
     string? Descripcion,
+    ModalidadFecha Modalidad,
     DateTimeOffset? FechaEncuentro,
     DateTimeOffset FechaFinPropuestas,
     DateTimeOffset FechaFinVotacion,
@@ -15,4 +16,5 @@ public sealed record SalidaDto(
     EstadoSalida Estado,
     Guid CreadorId,
     IReadOnlyCollection<ParticipanteSalidaDto> Participantes,
+    IReadOnlyCollection<OpcionFechaDto> OpcionesFecha,
     IReadOnlyCollection<PropuestaDto> Propuestas);

@@ -82,4 +82,31 @@ public sealed class SalidasApiService(
                        cancellationToken: cancellationToken)
                ?? [];
     }
+
+    public async Task<SalidaCreadaDto> ObtenerPorIdAsync(
+        Guid salidaId,
+        CancellationToken cancellationToken = default)
+    {
+        var token = await sessionService.ObtenerAccessTokenAsync();
+        if (string.IsNullOrWhiteSpace(token)) throw new SesionVencidaException();
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"api/salidas/{salidaId}");
+        request.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token);
+
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+            throw new SesionVencidaException();
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            throw new ApiException("No se encontró la salida.");
+        if (!response.IsSuccessStatusCode)
+            throw new ApiException("No se pudo obtener el detalle de la salida.");
+
+        return await response.Content.ReadFromJsonAsync<SalidaCreadaDto>(
+                   cancellationToken: cancellationToken)
+               ?? throw new ApiException("La API devolvió una respuesta vacía.");
+    }
 }

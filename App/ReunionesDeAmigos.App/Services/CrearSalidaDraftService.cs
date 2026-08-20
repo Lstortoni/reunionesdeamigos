@@ -7,13 +7,40 @@ public sealed class CrearSalidaDraftService
 {
     public string Nombre { get; set; } = string.Empty;
     public string Descripcion { get; set; } = string.Empty;
+    public ModalidadFecha Modalidad { get; private set; } = ModalidadFecha.Fija;
     public DateTime Fecha { get; set; } = DateTime.Today.AddDays(7);
     public TimeSpan Hora { get; set; } = new(20, 0, 0);
     public int? DiasParaPropuestas { get; set; }
     public int? DiasParaVotar { get; set; }
     public List<PropuestaSalidaDraft> Propuestas { get; } = [];
+    public List<DateTimeOffset> OpcionesFecha { get; } = [];
 
-    public bool EstaCompleto => Propuestas.Count == 3;
+    public bool PuedeCrear => Propuestas.Count is >= 1 and <= 3;
+
+    public bool AlcanzoLimitePropuestas => Propuestas.Count >= 3;
+
+    public void CambiarModalidad(ModalidadFecha modalidad)
+    {
+        Modalidad = modalidad;
+        if (modalidad == ModalidadFecha.Fija) OpcionesFecha.Clear();
+    }
+
+    public string? AgregarOpcionFecha(DateTime fecha, TimeSpan hora)
+    {
+        if (OpcionesFecha.Count >= 3) return "Podés proponer como máximo tres fechas.";
+
+        var opcion = new DateTimeOffset(fecha.Date + hora);
+        if (OpcionesFecha.Any(x => x == opcion)) return "Esa fecha y hora ya fueron agregadas.";
+
+        OpcionesFecha.Add(opcion);
+        OpcionesFecha.Sort();
+        return null;
+    }
+
+    public void QuitarOpcionFecha(int indice)
+    {
+        if (indice >= 0 && indice < OpcionesFecha.Count) OpcionesFecha.RemoveAt(indice);
+    }
 
     public string? AgregarManual(
         string nombre,
@@ -58,11 +85,15 @@ public sealed class CrearSalidaDraftService
 
     public CrearSalidaRequest CrearRequest()
     {
-        var fechaEncuentro = new DateTimeOffset(Fecha.Date + Hora);
+        DateTimeOffset? fechaEncuentro = Modalidad == ModalidadFecha.Fija
+            ? new DateTimeOffset(Fecha.Date + Hora)
+            : null;
         return new CrearSalidaRequest(
             Nombre.Trim(),
             Normalizar(Descripcion),
+            Modalidad,
             fechaEncuentro,
+            OpcionesFecha.ToArray(),
             DiasParaPropuestas ?? 3,
             DiasParaVotar ?? 2,
             Propuestas.Select(x => new CrearPropuestaInicialRequest(
@@ -78,10 +109,12 @@ public sealed class CrearSalidaDraftService
     {
         Nombre = string.Empty;
         Descripcion = string.Empty;
+        Modalidad = ModalidadFecha.Fija;
         Fecha = DateTime.Today.AddDays(7);
         Hora = new TimeSpan(20, 0, 0);
         DiasParaPropuestas = null;
         DiasParaVotar = null;
+        OpcionesFecha.Clear();
         Propuestas.Clear();
     }
 

@@ -16,11 +16,20 @@ internal static class SalidaMapper
         var propuestas = salida.Propuestas
             .Select(PropuestaMapper.ToDto)
             .ToArray();
+        var opcionesFecha = salida.OpcionesFecha
+            .OrderBy(x => x.FechaHora)
+            .Select(x => new OpcionFechaDto(
+                x.Id,
+                x.ParticipanteSalidaId,
+                x.FechaHora,
+                x.FechaCreacion))
+            .ToArray();
 
         return new SalidaDto(
             salida.Id,
             salida.Nombre,
             salida.Descripcion,
+            salida.Modalidad,
             salida.FechaEncuentro,
             salida.FechaFinPropuestas,
             salida.FechaFinVotacion,
@@ -29,6 +38,7 @@ internal static class SalidaMapper
             salida.ObtenerEstado(fechaActual),
             salida.CreadorId,
             participantes,
+            opcionesFecha,
             propuestas);
     }
 }

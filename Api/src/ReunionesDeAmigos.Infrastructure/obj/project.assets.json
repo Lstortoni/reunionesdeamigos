@@ -2906,11 +2906,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\Api\\src\\ReunionesDeAmigos.Application\\ReunionesDeAmigos.Application.csproj": {
-              "projectPath": "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\Api\\src\\ReunionesDeAmigos.Application\\ReunionesDeAmigos.Application.csproj"
+            "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\api\\src\\ReunionesDeAmigos.Application\\ReunionesDeAmigos.Application.csproj": {
+              "projectPath": "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\api\\src\\ReunionesDeAmigos.Application\\ReunionesDeAmigos.Application.csproj"
             },
-            "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\Api\\src\\ReunionesDeAmigos.Domain\\ReunionesDeAmigos.Domain.csproj": {
-              "projectPath": "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\Api\\src\\ReunionesDeAmigos.Domain\\ReunionesDeAmigos.Domain.csproj"
+            "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\api\\src\\ReunionesDeAmigos.Domain\\ReunionesDeAmigos.Domain.csproj": {
+              "projectPath": "C:\\Carpeta Proyectos Personales\\GitHub\\reunionesdeamigos\\api\\src\\ReunionesDeAmigos.Domain\\ReunionesDeAmigos.Domain.csproj"
             }
           }
         }

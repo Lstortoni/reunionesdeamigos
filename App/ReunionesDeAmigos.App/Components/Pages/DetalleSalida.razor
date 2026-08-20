@@ -1,0 +1,114 @@
+@page "/salidas/{SalidaId:guid}"
+@inject ISalidasApiService SalidasApiService
+@inject ISessionService SessionService
+@inject NavigationManager Navigation
+
+<PageTitle>Detalle de salida</PageTitle>
+<main class="home-page">
+    <header class="page-header">
+        <button class="back-button" @onclick="Volver" aria-label="Volver">‹</button>
+        <div><p class="eyebrow">Reuniones de Amigos</p><h1>Detalle de salida</h1></div>
+    </header>
+
+    @if (_cargando)
+    {
+        <div class="state-card">Cargando la salida...</div>
+    }
+    else if (_error is not null)
+    {
+        <div class="state-card error-state"><p>@_error</p><button class="btn btn-outline-secondary" @onclick="CargarAsync">Reintentar</button></div>
+    }
+    else if (_salida is not null)
+    {
+        <section class="outing-detail-card">
+            <div class="outing-card-topline"><span class="status-pill">@ObtenerEstado(_salida.Estado)</span></div>
+            <h2>@_salida.Nombre</h2>
+            @if (!string.IsNullOrWhiteSpace(_salida.Descripcion)) { <p class="outing-detail-description">@_salida.Descripcion</p> }
+
+            <section class="outing-detail-section">
+                @if (_salida.Modalidad == ModalidadFecha.Fija && _salida.FechaEncuentro.HasValue)
+                {
+                    <h3>Fecha del encuentro</h3>
+                    <p>@_salida.FechaEncuentro.Value.ToLocalTime().ToString("dddd d 'de' MMMM, HH:mm")</p>
+                }
+                else
+                {
+                    <h3>Fechas propuestas</h3>
+                    <p class="section-description">La fecha se definirá entre los participantes.</p>
+                    <div class="date-option-list">
+                        @foreach (var opcion in _salida.OpcionesFecha.OrderBy(x => x.FechaHora))
+                        {
+                            <article class="date-option-item"><span>@opcion.FechaHora.ToLocalTime().ToString("dddd dd/MM · HH:mm")</span></article>
+                        }
+                    </div>
+                }
+            </section>
+
+            <section class="outing-detail-section">
+                <h3>Propuestas (@_salida.Propuestas.Count)</h3>
+                <div class="detail-list">
+                    @foreach (var propuesta in _salida.Propuestas)
+                    {
+                        <article><span class="status-pill">@(propuesta.Tipo == TipoPropuesta.Manual ? "Manual" : "Google")</span><strong>@ObtenerNombre(propuesta)</strong>@if (!string.IsNullOrWhiteSpace(propuesta.DireccionManual)) { <small>@propuesta.DireccionManual</small> }</article>
+                    }
+                </div>
+            </section>
+
+            <section class="outing-detail-section">
+                <h3>Participantes (@_salida.Participantes.Count)</h3>
+                <div class="detail-list">
+                    @foreach (var participante in _salida.Participantes)
+                    {
+                        <article><strong>@participante.NombreVisible</strong><small>@(participante.EsInvitado ? "Invitado" : "Usuario registrado")</small></article>
+                    }
+                </div>
+            </section>
+
+            <section class="outing-detail-section">
+                <h3>Invitación</h3>
+                <div class="access-code"><small>Código de acceso</small><strong>@_salida.CodigoAcceso</strong></div>
+                <div class="invitation-link"><small>Enlace para compartir</small><span>@_salida.EnlaceInvitacion</span></div>
+                <div class="invitation-actions"><button class="btn btn-outline-secondary" @onclick="CopiarAsync">Copiar enlace</button><button class="btn btn-primary" @onclick="CompartirAsync">Compartir</button></div>
+                @if (_copiado) { <p class="copy-confirmation">Enlace copiado.</p> }
+            </section>
+        </section>
+    }
+</main>
+
+@code {
+    [Parameter] public Guid SalidaId { get; set; }
+    private SalidaCreadaDto? _salida;
+    private bool _cargando = true;
+    private bool _copiado;
+    private string? _error;
+
+    protected override async Task OnParametersSetAsync() => await CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        _cargando = true; _error = null;
+        try { _salida = await SalidasApiService.ObtenerPorIdAsync(SalidaId); }
+        catch (SesionVencidaException) { SessionService.Cerrar(); Navigation.NavigateTo("/login", true); }
+        catch (HttpRequestException) { _error = "No se pudo conectar con la API."; }
+        catch (ApiException ex) { _error = ex.Message; }
+        catch (Exception) { _error = "Ocurrió un error al cargar la salida."; }
+        finally { _cargando = false; }
+    }
+
+    private void Volver() => Navigation.NavigateTo("/salidas/mias");
+    private static string ObtenerNombre(PropuestaDto propuesta) => propuesta.Tipo == TipoPropuesta.Manual ? propuesta.NombreManual ?? "Opción manual" : "Lugar de Google";
+    private static string ObtenerEstado(EstadoSalida estado) => estado switch { EstadoSalida.RecibiendoPropuestas => "Propuestas", EstadoSalida.VotacionAbierta => "Votación abierta", EstadoSalida.Confirmada => "Confirmada", EstadoSalida.Cancelada => "Cancelada", EstadoSalida.Finalizada => "Finalizada", _ => "Sin estado" };
+
+    private async Task CopiarAsync()
+    {
+        if (_salida is null) return;
+        await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(_salida.EnlaceInvitacion);
+        _copiado = true;
+    }
+
+    private async Task CompartirAsync()
+    {
+        if (_salida is null) return;
+        await Microsoft.Maui.ApplicationModel.DataTransfer.Share.Default.RequestAsync(new Microsoft.Maui.ApplicationModel.DataTransfer.ShareTextRequest { Title = $"Invitación a {_salida.Nombre}", Text = $"Te invito a {_salida.Nombre}. Entrá desde este enlace: {_salida.EnlaceInvitacion}" });
+    }
+}

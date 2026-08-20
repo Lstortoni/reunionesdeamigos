@@ -10,4 +10,8 @@ public interface ISalidasApiService
 
     Task<IReadOnlyCollection<SalidaResumenDto>> ObtenerMiasAsync(
         CancellationToken cancellationToken = default);
+
+    Task<SalidaCreadaDto> ObtenerPorIdAsync(
+        Guid salidaId,
+        CancellationToken cancellationToken = default);
 }

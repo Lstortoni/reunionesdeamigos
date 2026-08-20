@@ -8,7 +8,9 @@ public sealed class SalidaCreadaDto
 
     public string? Descripcion { get; init; }
 
-    public DateTimeOffset FechaEncuentro { get; init; }
+    public ModalidadFecha Modalidad { get; init; }
+
+    public DateTimeOffset? FechaEncuentro { get; init; }
 
     public DateTimeOffset FechaFinPropuestas { get; init; }
 
@@ -23,6 +25,9 @@ public sealed class SalidaCreadaDto
     public Guid CreadorId { get; init; }
 
     public IReadOnlyCollection<ParticipanteSalidaDto> Participantes { get; init; }
+        = [];
+
+    public IReadOnlyCollection<OpcionFechaDto> OpcionesFecha { get; init; }
         = [];
 
     public IReadOnlyCollection<PropuestaDto> Propuestas { get; init; }

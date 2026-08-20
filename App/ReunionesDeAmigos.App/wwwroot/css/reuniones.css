@@ -303,6 +303,18 @@ body {
     color: #766d64;
 }
 
+.outing-card-button { cursor: pointer; }
+.outing-card-button:focus { outline: 3px solid rgba(214, 111, 60, .24); }
+.outing-detail-card { background: rgba(255,255,255,.94); border: 1px solid rgba(92,70,48,.12); border-radius: 20px; box-shadow: 0 12px 30px rgba(69,52,35,.08); padding: 1.25rem; }
+.outing-detail-card h2 { margin: .8rem 0 .35rem; }
+.outing-detail-description { color: #6d645b; }
+.outing-detail-section { border-top: 1px solid #eee7df; margin-top: 1.25rem; padding-top: 1rem; }
+.outing-detail-section h3 { margin: 0 0 .75rem; }
+.detail-list { display: grid; gap: .65rem; }
+.detail-list article { background: #faf5ee; border-radius: 13px; display: grid; gap: .35rem; padding: .8rem; }
+.detail-list article .status-pill { justify-self: start; }
+.detail-list small { color: #766d64; }
+
 .status-pill {
     padding: 0.3rem 0.65rem;
     border-radius: 999px;
@@ -535,6 +547,54 @@ body {
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr);
     gap: 0.75rem;
 }
+
+.date-mode-fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.date-mode-fieldset legend {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: .7rem;
+}
+
+.date-mode-option {
+    align-items: flex-start;
+    border: 1px solid #e6ddd2;
+    border-radius: 16px;
+    display: flex;
+    gap: .75rem;
+    margin-bottom: .65rem;
+    padding: .9rem;
+}
+
+.date-mode-option input { margin-top: .25rem; }
+.date-mode-option span { display: grid; gap: .2rem; }
+.date-mode-option small,
+.date-options-heading small { color: #766f68; display: block; }
+
+.date-options-editor {
+    background: #faf5ee;
+    border-radius: 18px;
+    padding: 1rem;
+}
+
+.date-options-heading,
+.date-option-item {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.date-options-heading > span { color: #a65335; font-weight: 700; }
+.empty-date-options { color: #766f68; margin: 1rem 0; }
+.date-option-list { display: grid; gap: .55rem; margin: .9rem 0; }
+.date-option-item { background: #fff; border-radius: 13px; padding: .75rem; }
+.date-option-item button { background: none; border: 0; color: #a65335; font-weight: 700; }
+.add-date-button { margin-top: .25rem; width: 100%; }
 
 .creation-summary {
     display: grid;

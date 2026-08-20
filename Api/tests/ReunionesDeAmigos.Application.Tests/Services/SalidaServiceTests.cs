@@ -35,7 +35,9 @@ public sealed class SalidaServiceTests
         var request = new CrearSalidaRequest(
             "Cena del sábado",
             null,
+            ModalidadFecha.Fija,
             fechaEncuentroLocal,
+            [],
             3,
             2,
             [
@@ -72,6 +74,62 @@ public sealed class SalidaServiceTests
         Assert.Equal(resultado.Id, resumen.Id);
         Assert.True(resumen.EsCreador);
         Assert.Equal(1, resumen.CantidadParticipantes);
+        Assert.Equal(1, unitOfWork.CantidadGuardados);
+    }
+
+    [Fact]
+    public async Task CrearAsync_ConFechaADefinir_DeberiaGuardarLasOpcionesIniciales()
+    {
+        var fechaActual = new DateTimeOffset(
+            2026, 8, 1, 12, 0, 0, TimeSpan.Zero);
+        var almacenamiento = new AlmacenamientoEnMemoria();
+        var creador = Usuario.Crear(
+            "Leo",
+            "leo@email.com",
+            "hash-de-prueba",
+            fechaActual);
+        almacenamiento.Usuarios.Add(creador);
+        var opcionesLocales = new[]
+        {
+            new DateTimeOffset(2026, 8, 15, 21, 0, 0, TimeSpan.FromHours(-3)),
+            new DateTimeOffset(2026, 8, 16, 13, 0, 0, TimeSpan.FromHours(-3)),
+            new DateTimeOffset(2026, 8, 22, 21, 0, 0, TimeSpan.FromHours(-3))
+        };
+        var unitOfWork = new UnitOfWorkEnMemoria();
+        var servicio = new SalidaService(
+            new SalidaRepositoryEnMemoria(almacenamiento),
+            new UsuarioRepositoryEnMemoria(almacenamiento),
+            unitOfWork,
+            new ClockFijo(fechaActual),
+            new CodigoAccesoGeneratorFijo("FECHAS-1234"),
+            new EnlaceInvitacionGeneratorFijo("https://app.test"));
+        var request = new CrearSalidaRequest(
+            "Cena a coordinar",
+            null,
+            ModalidadFecha.ADefinir,
+            null,
+            opcionesLocales,
+            3,
+            2,
+            [
+                CrearPropuestaManual("Pizzería"),
+                CrearPropuestaManual("Parrilla"),
+                CrearPropuestaManual("Casa de Fede")
+            ]);
+
+        var resultado = await servicio.CrearAsync(
+            request,
+            creador.Id,
+            CancellationToken.None);
+
+        var salidaGuardada = Assert.Single(almacenamiento.Salidas);
+        Assert.Equal(ModalidadFecha.ADefinir, salidaGuardada.Modalidad);
+        Assert.Null(salidaGuardada.FechaEncuentro);
+        Assert.Equal(3, salidaGuardada.OpcionesFecha.Count);
+        Assert.Equal(3, resultado.OpcionesFecha.Count);
+        Assert.All(
+            resultado.OpcionesFecha,
+            opcion => Assert.Equal(TimeSpan.Zero, opcion.FechaHora.Offset));
         Assert.Equal(1, unitOfWork.CantidadGuardados);
     }
 
